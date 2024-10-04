@@ -86,6 +86,7 @@ export async function day3() {
     util.inspect(symbolInfos, { showHidden: false, depth: null, colors: true })
   );
 
+  // Part 1 Answer
   let sumOfPartNumbers = 0;
   for (const numInfo of numInfos) {
     if (isAdjacentSymbol(numInfo, symbolInfos)) {
@@ -113,4 +114,30 @@ export async function day3() {
   //       [{ symbol: '#', coord: { x: 0, y: 1 } }]
   //     )
   //   );
+
+  // Part 2 Answer
+  let sumOfGearRatio = 0;
+
+  const starSymbols = symbolInfos.filter(({ symbol }) => symbol === '*');
+
+  console.log(
+    'starSymbol',
+    util.inspect(starSymbols, { showHidden: false, depth: null, colors: true })
+  );
+
+  for (const starSymbol of starSymbols) {
+    let adjacentNum = [];
+    for (const numInfo of numInfos) {
+      if (isAdjacentSymbol(numInfo, [starSymbol])) {
+        adjacentNum.push(numInfo);
+      }
+    }
+
+    // Check if it's a gear, the calculate gear ratio
+    if (adjacentNum.length === 2) {
+      sumOfGearRatio += adjacentNum[0].num * adjacentNum[1].num;
+    }
+  }
+
+  console.log('sumOfGearRatio', sumOfGearRatio);
 }
