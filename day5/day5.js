@@ -5,69 +5,117 @@ const mapSrcToDest = (numRangeInput, srcToDestMaps) => {
   console.log('mapSrcToDest numRangeInput', numRangeInput);
 
   let toProcessNumRange = numRangeInput;
+
+  const [num, numRange] = toProcessNumRange;
+  const minNum = num;
+  const maxNum = num + numRange;
+
+  let noMapCount = 0;
+
+  const partialMappingData = [];
+
+  for (const { dest, source, length } of srcToDestMaps) {
+    const minNumMap = source;
+    const maxNumMap = source + length;
+    const mapDiff = dest - source;
+    // case 1 complete map
+    if (minNum >= minNumMap && maxNum <= maxNumMap) {
+      return [[num + mapDiff, numRange]];
+    }
+    // no map
+    else if (
+      (minNum < minNumMap && maxNum < minNumMap) ||
+      (minNum > maxNumMap && maxNum > maxNumMap)
+    ) {
+      noMapCount++;
+    }
+    // partial map
+    else {
+      //   const noMapLeftLower = num;
+      //   const noMapLeftUpper = source - 1;
+      const mapLower = source;
+      const mapUpper = source + length - 1;
+      //   const noMapRightLower = source + length;
+      //   const noMapRightUpper = num + numRange;
+
+      partialMappingData.push({
+        mapLower,
+        mapUpper,
+        mapDiff,
+      });
+    }
+  }
+
+  // case 2 no map all
+  if (noMapCount === srcToDestMaps.length) {
+    return [[num, numRange]];
+  }
+
+  // case 3 partial map
   const mappedRanges = [];
 
-  let count = 0;
+  partialMappingData.sort(function (a, b) {
+    return a['mapLower'] - b['mapLower'];
+  });
+  console.log('partialMappingData', partialMappingData);
 
-  while (true) {
-    const [num, numRange] = toProcessNumRange;
-    console.log('toProcessNumRange', toProcessNumRange);
+  let numRangeToProcess = [num, numRange];
 
-    let lowestPositiveDiff = Infinity;
-    let mapForSplit = undefined;
+  let hasRightRange = true;
 
-    for (const srcToDestMap of srcToDestMaps) {
-      const sourceDiff = srcToDestMap.source - num;
-      console.log('cal sourceDiff', sourceDiff);
-      if (sourceDiff >= 0 && sourceDiff < lowestPositiveDiff) {
-        lowestPositiveDiff = sourceDiff;
-        mapForSplit = srcToDestMap;
-      }
+  for (const { mapLower, mapUpper, mapDiff } of partialMappingData) {
+    const min = numRangeToProcess[0];
+    const max = numRangeToProcess[0] + numRangeToProcess[1] - 1;
+    const mapRangeMin = mapLower < min ? min : mapLower;
+    const mapRangeMax = mapUpper > max ? max : mapUpper;
+    const leftRangeMin = min;
+    const leftRangeMax = mapRangeMin - 1;
+    const rightRangeMin = mapRangeMax + 1;
+    const rightRangeMax = max;
+
+    // num before mapped num
+    if (leftRangeMin <= leftRangeMax) {
+      mappedRanges.push([leftRangeMin, leftRangeMax - leftRangeMin + 1]);
     }
-    console.log('mapForSplit', mapForSplit, 'lowestPositiveDiff', lowestPositiveDiff);
 
-    if (mapForSplit) {
-      // case 1: no map
-      if (lowestPositiveDiff > 0) {
-        const noMapNumRange = [num, lowestPositiveDiff];
-        mappedRanges.push(noMapNumRange);
-        console.log('noMapNumRange', noMapNumRange);
-      }
+    // insert mapped num
+    mappedRanges.push([mapRangeMin + mapDiff, mapRangeMax - mapRangeMin + 1]);
 
-      // case 2: map
-      const remainNumInRange = numRange - lowestPositiveDiff;
-      console.log('remainNumInRange', remainNumInRange);
-
-      const totalNumToMap =
-        mapForSplit.length > remainNumInRange ? remainNumInRange : mapForSplit.length;
-
-      const mapDiff = mapForSplit.dest - mapForSplit.source;
-      const mapNumRange = [mapForSplit.source + mapDiff, totalNumToMap];
-      mappedRanges.push(mapNumRange);
-      console.log('mapNumRange', mapNumRange);
-
-      // case 3: to process
-      toProcessNumRange = [
-        mapForSplit.source + totalNumToMap,
-        numRange - lowestPositiveDiff - totalNumToMap,
-      ];
-      console.log('new toProcessNumRange', toProcessNumRange);
+    // num after mapped num
+    if (rightRangeMin <= rightRangeMax) {
+      numRangeToProcess = [rightRangeMin, rightRangeMax - rightRangeMin + 1];
     } else {
-      if (numRange > 0) {
-        mappedRanges.push(toProcessNumRange);
-        console.log('last range', toProcessNumRange);
-      }
+      hasRightRange = false;
+      console.log(
+        'cant find right range!',
+        'rightRangeMin',
+        rightRangeMin,
+        'rightRangeMax',
+        rightRangeMax,
+        'mapUpper',
+        mapUpper,
+        'mapLower',
+        mapLower,
+        'numRangeToProcess',
+        numRangeToProcess
+      );
       break;
     }
-    console.log('-------------', count);
-
-    count++;
-    if (count === 2) break;
   }
+
+  if (hasRightRange) mappedRanges.push(numRangeToProcess);
 
   console.log('mappedRanges', mappedRanges);
 
   return mappedRanges;
+};
+
+const mapSrcToDestAll = (allNumRangeInput, srcToDestMaps) => {
+  const allMappedResult = [];
+  for (const numRangeInput of allNumRangeInput) {
+    allMappedResult.push(...mapSrcToDest(numRangeInput, srcToDestMaps));
+  }
+  return allMappedResult;
 };
 
 export async function day5() {
@@ -133,7 +181,39 @@ export async function day5() {
 
   for (const { seedNum, range } of inputData.seeds.seedRanges) {
     // seed to soil map
-    mapSrcToDest([seedNum, range], inputData.seedToSoil.maps);
+    const soil = mapSrcToDestAll([[seedNum, range]], inputData.seedToSoil.maps);
+    console.log('soil', soil);
+
+    // soil to fertilizer map
+    const fertilizer = mapSrcToDestAll(soil, inputData.soilToFertilizer.maps);
+    console.log('fertilizer', fertilizer);
+
+    // fertilizer-to-water map
+    const water = mapSrcToDestAll(fertilizer, inputData.fertilizerToWater.maps);
+    console.log('water', water);
+
+    // water-to-light map
+    const light = mapSrcToDestAll(water, inputData.waterToLight.maps);
+    console.log('light', light);
+
+    // light-to-temperature map
+    const temperature = mapSrcToDestAll(light, inputData.lightToTemperature.maps);
+    console.log('temperature', temperature);
+
+    // temperature-to-humidity map
+    const humidity = mapSrcToDestAll(temperature, inputData.temperatureToHumidity.maps);
+    console.log('humidity', humidity);
+
+    // humidity-to-location map
+    const location = mapSrcToDestAll(humidity, inputData.humidityToLocation.maps);
+    console.log('location', location);
+
+    // find lowest location
+    for (const eachLocation of location) {
+      if (eachLocation[0] < lowestLocation) {
+        lowestLocation = eachLocation[0];
+      }
+    }
   }
 
   console.log('lowestLocation', lowestLocation);
