@@ -1,37 +1,88 @@
 import { readLines, spiltWithSpace } from '../utils.mjs';
 import util from 'util';
 
-const mapSrcToDest = (num, dest, source, length) => {
-  //   console.log('num', num, 'dest', dest, 'source', source, 'length', length);
-  if (num >= source && num <= source + length) {
-    // console.log('mapped to', num + dest - source);
-    return num + dest - source;
-  } else {
-    return num;
-  }
-};
+const mapSrcToDest = (numRangeInput, srcToDestMaps) => {
+  console.log('mapSrcToDest numRangeInput', numRangeInput);
 
-const mapSrcToDestAll = (num, map) => {
-  for (const { dest, source, length } of map) {
-    const mappedNum = mapSrcToDest(num, dest, source, length);
-    if (mappedNum != num) return mappedNum;
+  let toProcessNumRange = numRangeInput;
+  const mappedRanges = [];
+
+  let count = 0;
+
+  while (true) {
+    const [num, numRange] = toProcessNumRange;
+    console.log('toProcessNumRange', toProcessNumRange);
+
+    let lowestPositiveDiff = Infinity;
+    let mapForSplit = undefined;
+
+    for (const srcToDestMap of srcToDestMaps) {
+      const sourceDiff = srcToDestMap.source - num;
+      console.log('cal sourceDiff', sourceDiff);
+      if (sourceDiff >= 0 && sourceDiff < lowestPositiveDiff) {
+        lowestPositiveDiff = sourceDiff;
+        mapForSplit = srcToDestMap;
+      }
+    }
+    console.log('mapForSplit', mapForSplit, 'lowestPositiveDiff', lowestPositiveDiff);
+
+    if (mapForSplit) {
+      // case 1: no map
+      if (lowestPositiveDiff > 0) {
+        const noMapNumRange = [num, lowestPositiveDiff];
+        mappedRanges.push(noMapNumRange);
+        console.log('noMapNumRange', noMapNumRange);
+      }
+
+      // case 2: map
+      const remainNumInRange = numRange - lowestPositiveDiff;
+      console.log('remainNumInRange', remainNumInRange);
+
+      const totalNumToMap =
+        mapForSplit.length > remainNumInRange ? remainNumInRange : mapForSplit.length;
+
+      const mapDiff = mapForSplit.dest - mapForSplit.source;
+      const mapNumRange = [mapForSplit.source + mapDiff, totalNumToMap];
+      mappedRanges.push(mapNumRange);
+      console.log('mapNumRange', mapNumRange);
+
+      // case 3: to process
+      toProcessNumRange = [
+        mapForSplit.source + totalNumToMap,
+        numRange - lowestPositiveDiff - totalNumToMap,
+      ];
+      console.log('new toProcessNumRange', toProcessNumRange);
+    } else {
+      if (numRange > 0) {
+        mappedRanges.push(toProcessNumRange);
+        console.log('last range', toProcessNumRange);
+      }
+      break;
+    }
+    console.log('-------------', count);
+
+    count++;
+    if (count === 2) break;
   }
-  return num;
+
+  console.log('mappedRanges', mappedRanges);
+
+  return mappedRanges;
 };
 
 export async function day5() {
   const inputData = {
-    seeds: { title: 'seeds:', seedNums: [] },
-    seedToSoil: { title: 'seed-to-soil map:', map: [] },
-    soilToFertilizer: { title: 'soil-to-fertilizer map:', map: [] },
-    fertilizerToWater: { title: 'fertilizer-to-water map:', map: [] },
-    waterToLight: { title: 'water-to-light map:', map: [] },
-    lightToTemperature: { title: 'light-to-temperature map:', map: [] },
+    seeds: { title: 'seeds:', seedRanges: [] },
+    seedToSoil: { title: 'seed-to-soil map:', maps: [] },
+    soilToFertilizer: { title: 'soil-to-fertilizer map:', maps: [] },
+    fertilizerToWater: { title: 'fertilizer-to-water map:', maps: [] },
+    waterToLight: { title: 'water-to-light map:', maps: [] },
+    lightToTemperature: { title: 'light-to-temperature map:', maps: [] },
     temperatureToHumidity: {
       title: 'temperature-to-humidity map:',
-      map: [],
+      maps: [],
     },
-    humidityToLocation: { title: 'humidity-to-location map:', map: [] },
+    humidityToLocation: { title: 'humidity-to-location map:', maps: [] },
   };
 
   let currentParseInput = {};
@@ -40,7 +91,20 @@ export async function day5() {
     if (line.startsWith('seeds:')) {
       const token = line.split(':');
       const seedListToken = token[1];
-      inputData.seeds.seedNums = spiltWithSpace(seedListToken).map((item) => Number(item));
+      const seedRangeTokens = spiltWithSpace(seedListToken).map((item) => Number(item));
+
+      let seedNum = -1;
+      for (let i = 0; i < seedRangeTokens.length; i++) {
+        const seedRangeToken = seedRangeTokens[i];
+        if (i % 2 === 0) {
+          seedNum = seedRangeToken;
+        } else {
+          const range = seedRangeToken;
+          inputData.seeds.seedRanges.push({ seedNum, range });
+        }
+      }
+
+      //   inputData.seeds.seedNums = spiltWithSpace(seedListToken).map((item) => Number(item));
     } else if (line.trim() === '') {
       // do noting if line is empty.
     } else if (line.includes(':')) {
@@ -55,56 +119,21 @@ export async function day5() {
       const source = Number(token[1]);
       const length = Number(token[2]);
 
-      currentParseInput.map.push({ dest, source, length });
+      currentParseInput.maps.push({ dest, source, length });
     }
   }
 
+  //   console.log('seedRanges', inputData.seeds.seedRanges);
+  console.log(
+    'inputData',
+    util.inspect(inputData, { showHidden: false, depth: null, colors: true })
+  );
+
   let lowestLocation = Infinity;
 
-  for (const seed of inputData.seeds.seedNums) {
-    console.log('seed->soil->fertilizer->water->light->temperature->humidity->location');
-    let soil = mapSrcToDestAll(seed, inputData.seedToSoil.map);
-    if (!soil) soil = seed;
-
-    let fertilizer = mapSrcToDestAll(soil, inputData.soilToFertilizer.map);
-    if (!fertilizer) fertilizer = soil;
-
-    let water = mapSrcToDestAll(fertilizer, inputData.fertilizerToWater.map);
-    if (!water) water = fertilizer;
-
-    let light = mapSrcToDestAll(water, inputData.waterToLight.map);
-    if (!light) light = water;
-
-    let temperature = mapSrcToDestAll(light, inputData.lightToTemperature.map);
-    if (!temperature) temperature = light;
-
-    let humidity = mapSrcToDestAll(temperature, inputData.temperatureToHumidity.map);
-    if (!humidity) humidity = temperature;
-
-    let location = mapSrcToDestAll(humidity, inputData.humidityToLocation.map);
-    if (!location) location = humidity;
-
-    console.log(
-      seed,
-      '->',
-      soil,
-      '->',
-      fertilizer,
-      '->',
-      water,
-      '->',
-      light,
-      '->',
-      temperature,
-      '->',
-      humidity,
-      '->',
-      location
-    );
-
-    if (location < lowestLocation) {
-      lowestLocation = location;
-    }
+  for (const { seedNum, range } of inputData.seeds.seedRanges) {
+    // seed to soil map
+    mapSrcToDest([seedNum, range], inputData.seedToSoil.maps);
   }
 
   console.log('lowestLocation', lowestLocation);
