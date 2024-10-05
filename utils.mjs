@@ -8,3 +8,10 @@ export function readLines(fileName) {
     crlfDelay: Infinity,
   });
 }
+
+export function spiltWithSpace(str) {
+  return str
+    .split(' ')
+    .map((item) => item.trim())
+    .filter((item) => item);
+}

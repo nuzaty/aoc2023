@@ -4,4 +4,4 @@ import { day3 } from './day3/day3.js';
 import { day4 } from './day4/day4.js';
 import { day5 } from './day5/day5.js';
 
-day4();
+day5();
