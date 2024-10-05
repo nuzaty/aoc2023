@@ -1,5 +1,4 @@
-import fs from 'node:fs';
-import readline from 'readline';
+import { readLines } from '../utils.mjs';
 import util from 'util';
 
 const isCharNumber = (c) => {
@@ -35,12 +34,6 @@ const isAdjacentSymbol = (numInfo, symbolInfos) => {
 };
 
 export async function day3() {
-  const fileStream = fs.createReadStream('./day3/input.txt');
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  });
-
   let currentNumText = '';
   let currentNumCoord = [];
   const numInfos = [];
@@ -49,7 +42,7 @@ export async function day3() {
   let x = 0;
   let y = 0;
 
-  for await (const line of rl) {
+  for await (const line of readLines('./day3/input.txt')) {
     function clearCurrentNumInfo() {
       currentNumText = '';
       currentNumCoord = [];

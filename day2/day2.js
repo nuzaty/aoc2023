@@ -1,16 +1,9 @@
-import fs from 'node:fs';
-import readline from 'readline';
+import { readLines } from '../utils.mjs';
 
 export async function day2() {
-  const fileStream = fs.createReadStream('./day2/input.txt');
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  });
-
   let sumOfPowerOfPossibleBagConfig = 0;
 
-  for await (const line of rl) {
+  for await (const line of readLines('./day2/input.txt')) {
     const info = line.split(':');
     const gameIdInfo = info[0];
     const cubeSetsInfo = info[1];

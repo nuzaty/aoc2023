@@ -1,13 +1,6 @@
-import fs from 'node:fs';
-import readline from 'readline';
+import { readLines } from '../utils.mjs';
 
 export async function day1() {
-  const fileStream = fs.createReadStream('./day1/input.txt');
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  });
-
   const numberMap = {
     one: '1',
     two: '2',
@@ -24,7 +17,7 @@ export async function day1() {
 
   //   let count = 0;
 
-  for await (const line of rl) {
+  for await (const line of readLines('./day1/input.txt')) {
     let firstDigit = undefined;
     let lastDigit = undefined;
 
