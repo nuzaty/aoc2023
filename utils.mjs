@@ -9,6 +9,13 @@ export function readLines(fileName) {
   });
 }
 
+export function spiltWith(delimiter, str) {
+  return str
+    .split(delimiter)
+    .map((item) => item.trim())
+    .filter((item) => item);
+}
+
 export function spiltWithSpace(str) {
   return str
     .split(' ')
