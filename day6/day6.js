@@ -16,25 +16,44 @@ export async function day6() {
     }
   }
 
-  let output = 1;
+  let realTotalTime = '';
+  let realTotalDistance = '';
+  //   let output = 1;
 
   for (let i = 0; i < timeData.length; i++) {
     const totalTime = timeData[i];
     const recordDistance = distanceData[i];
     console.log('totalTime', totalTime, 'recordDistance', recordDistance);
 
-    let winCount = 0;
-    for (let pressTime = 0; pressTime <= totalTime; pressTime++) {
-      const calculatedDistance = pressTime * (totalTime - pressTime);
-      console.log('pressTime', pressTime, 'calculatedDistance', calculatedDistance);
+    realTotalTime += totalTime;
+    realTotalDistance += recordDistance;
 
-      if (calculatedDistance > recordDistance) {
-        winCount++;
-      }
+    // let winCount = 0;
+    // for (let pressTime = 0; pressTime <= totalTime; pressTime++) {
+    //   const calculatedDistance = pressTime * (totalTime - pressTime);
+    //   console.log('pressTime', pressTime, 'calculatedDistance', calculatedDistance);
+
+    //   if (calculatedDistance > recordDistance) {
+    //     winCount++;
+    //   }
+    // }
+
+    // output *= winCount;
+  }
+  let realTotalTimeNum = Number(realTotalTime);
+  let realTotalDistanceNum = Number(realTotalDistance);
+
+  console.log('realTotalTimeNum', realTotalTimeNum, 'realTotalDistanceNum', realTotalDistanceNum);
+
+  let winCount = 0;
+  for (let pressTime = 0; pressTime <= realTotalTimeNum; pressTime++) {
+    const calculatedDistance = pressTime * (realTotalTimeNum - pressTime);
+    // console.log('pressTime', pressTime, 'calculatedDistance', calculatedDistance);
+
+    if (calculatedDistance > realTotalDistanceNum) {
+      winCount++;
     }
-
-    output *= winCount;
   }
 
-  console.log('output', output);
+  console.log('winCount', winCount);
 }
