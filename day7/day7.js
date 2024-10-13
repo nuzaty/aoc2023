@@ -23,10 +23,14 @@ const getHandTypePoint = (hand) => {
   if (jokerFound) {
     // const orinalSymbolCount = structuredClone(symbolCount);
 
-    const jokerCount = symbolCount['J'];
-    symbolCount[symbolOfMaxCount] += jokerCount;
+    if (maxCount === -1) {
+      maxCount = 5;
+    } else {
+      const jokerCount = symbolCount['J'];
+      symbolCount[symbolOfMaxCount] += jokerCount;
+      maxCount += jokerCount;
+    }
     delete symbolCount['J'];
-    maxCount += jokerCount;
 
     // console.log('found joker! jokerCount: ', jokerCount, 'hand: ', hand);
     // console.log(orinalSymbolCount);
@@ -118,12 +122,14 @@ export async function day7() {
     const handPoint = getHandPoint(hand);
     // console.log('handPoint', handPoint);
 
-    input.push({
+    const lineData = {
       hand,
       point,
       handTypePoint,
       handPoint,
-    });
+    };
+
+    input.push(lineData);
   }
   input.sort((o1, o2) => {
     return o1.handTypePoint - o2.handTypePoint || o1.handPoint - o2.handPoint;
