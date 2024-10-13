@@ -11,8 +11,27 @@ const getHandTypePoint = (hand) => {
     }
   }
   let maxCount = -1;
-  for (const [, value] of Object.entries(symbolCount)) {
-    if (value > maxCount) maxCount = value;
+  let symbolOfMaxCount = undefined;
+  for (const [symbol, frequency] of Object.entries(symbolCount)) {
+    if (symbol !== 'J' && frequency > maxCount) {
+      maxCount = frequency;
+      symbolOfMaxCount = symbol;
+    }
+  }
+
+  const jokerFound = symbolCount.hasOwnProperty('J');
+  if (jokerFound) {
+    // const orinalSymbolCount = structuredClone(symbolCount);
+
+    const jokerCount = symbolCount['J'];
+    symbolCount[symbolOfMaxCount] += jokerCount;
+    delete symbolCount['J'];
+    maxCount += jokerCount;
+
+    // console.log('found joker! jokerCount: ', jokerCount, 'hand: ', hand);
+    // console.log(orinalSymbolCount);
+    // console.log(symbolCount);
+    // console.log('----');
   }
 
   const objectLength = Object.keys(symbolCount).length;
@@ -21,14 +40,20 @@ const getHandTypePoint = (hand) => {
       // Five of a kind
       return 7;
     case 4:
-      //Four of a kind
+      // Four of a kind
       return 6;
     case 3:
       // Full house or Three of a kind
       if (objectLength === 2) {
         // Full house
+        if (jokerFound) {
+          console.log('Full house / found joker! hand: ', hand);
+        }
         return 5;
       } else {
+        if (jokerFound) {
+          console.log('Three of a kind / found joker! hand: ', hand);
+        }
         // Three of a kind
         return 4;
       }
@@ -45,7 +70,7 @@ const getHandTypePoint = (hand) => {
       return 1;
 
     default:
-      throw new Error('wtf! impossible!');
+      throw new Error('wtf! impossible!, max count: ' + maxCount + ', ');
   }
 
   if (maxCount === 5) {
@@ -54,6 +79,7 @@ const getHandTypePoint = (hand) => {
 
 const getHandPoint = (hand) => {
   const pointOfCard = {
+    J: 1,
     2: 2,
     3: 3,
     4: 4,
@@ -63,10 +89,9 @@ const getHandPoint = (hand) => {
     8: 8,
     9: 9,
     T: 10,
-    J: 11,
-    Q: 12,
-    K: 13,
-    A: 14,
+    Q: 11,
+    K: 12,
+    A: 13,
   };
 
   let totalPoint = 0;
@@ -74,7 +99,7 @@ const getHandPoint = (hand) => {
   for (let i = hand.length - 1; i >= 0; i--) {
     const symbol = hand[i];
     totalPoint += pointOfCard[symbol] * multiplier;
-    multiplier *= 13;
+    multiplier *= 14;
   }
 
   return totalPoint;
@@ -88,12 +113,17 @@ export async function day7() {
     const point = token[1];
 
     const handTypePoint = getHandTypePoint(hand);
-    console.log('handTypePoint', handTypePoint);
+    // console.log('handTypePoint', handTypePoint);
 
     const handPoint = getHandPoint(hand);
-    console.log('handPoint', handPoint);
+    // console.log('handPoint', handPoint);
 
-    input.push({ hand, point, handTypePoint, handPoint });
+    input.push({
+      hand,
+      point,
+      handTypePoint,
+      handPoint,
+    });
   }
   input.sort((o1, o2) => {
     return o1.handTypePoint - o2.handTypePoint || o1.handPoint - o2.handPoint;
@@ -102,9 +132,12 @@ export async function day7() {
   let totalWinnings = 0;
   let rank = 1;
   for (const data of input) {
-    totalWinnings += data.point * rank;
+    const addedPoint = data.point * rank;
+    totalWinnings += addedPoint;
+    console.log('data', data, 'addedPoint: ', addedPoint, 'rank: ', rank);
+    // data['rank'] = rank;
+    // data['addedPoint'] = addedPoint;
     rank++;
-    console.log('data', data);
   }
 
   console.log('totalWinnings', totalWinnings);
