@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs", // or "esnext" for ES6 modules
+        "target": "es6", // or another version like "es2017"
+        "lib": [
+            "ES6",
+            "DOM"
+        ],
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "strict": true
+    }
+}

@@ -1,4 +1,4 @@
-import { readLines, spiltWith, spiltWithSpace } from '../utils.mjs';
+import { readLines, spiltWith, spiltWithSpace } from '../src/utils.js';
 import util from 'util';
 
 const getHandTypePoint = (hand) => {
