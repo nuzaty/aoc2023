@@ -7,5 +7,6 @@
 // import { day7 } from './day7/day7.cjs';
 
 import { day8 } from './day8/day8';
+import { day9 } from './day9/day9';
 
-day8();
+day9();
