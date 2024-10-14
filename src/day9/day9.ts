@@ -45,22 +45,32 @@ export async function day9() {
     }
 
     // step3: process diff seq
-    let sumOfExtrapolatedVal = 0;
+    let sumOfExtrapolatedValPart1 = 0;
+    let sumOfExtrapolatedValPart2 = 0;
 
     for (const rootSeq of rootSeqs) {
         const seqWithExtrapolatedVal = [...rootSeq.allDiffSeq, rootSeq.seq].reduce((prev, cur) => {
             if (prev.length > 0 && cur.length > 0) {
+                // part1
                 const lastPrev = prev[prev.length - 1];
-                const lastcur = cur[cur.length - 1];
-                const newEl = lastcur + lastPrev;
-                const newSeq = [...cur, newEl];
-                console.log('newSeq', newSeq);
+                const lastCur = cur[cur.length - 1];
+                const part1NewEl = lastCur + lastPrev;
+
+                // part2
+                const firstPrev = prev[0];
+                const firstCur = cur[0];
+                const part2NewEl = firstCur - firstPrev;
+
+                const newSeq = [part2NewEl, ...cur, part1NewEl];
+                // console.log('newSeq', newSeq);
                 return newSeq;
             }
             throw new Error('gu yung mai ru ja tum ngai d');
         })
 
-        sumOfExtrapolatedVal += seqWithExtrapolatedVal[seqWithExtrapolatedVal.length - 1];
+        sumOfExtrapolatedValPart1 += seqWithExtrapolatedVal[seqWithExtrapolatedVal.length - 1];
+        sumOfExtrapolatedValPart2 += seqWithExtrapolatedVal[0];
     }
-    console.log('sumOfExtrapolatedVal', sumOfExtrapolatedVal);
+    console.log('sumOfExtrapolatedValPart1', sumOfExtrapolatedValPart1);
+    console.log('sumOfExtrapolatedValPart2', sumOfExtrapolatedValPart2);
 }
