@@ -1,5 +1,4 @@
-import { readLines, spiltWith, spiltWithSpace, sleep, waitKeyInput } from "../utils";
-import util from 'util';
+import { readLines, spiltWith } from "../utils";
 
 const Directions = Object.freeze({
     NONE: Symbol("none"),
@@ -244,7 +243,6 @@ const getSideTileByDirection = (tiles: string[][], coord: Coordinate, direction:
 
     const maxRow = tiles.length - 1;
     const maxCol = tiles[0].length - 1;
-    // return [relativeLeftTile, relativeRightTile]
 
     const leftSideTiles = [];
     const rightSideTiles = [];
@@ -401,7 +399,6 @@ const colorToConsoleCode = (color: Symbol): string[] => {
     let codes: number[] = [];
 
     if (color === Colors.BLUE) {
-        // codes = [34, 89];
         codes = [94, 39];
     } else if (color === Colors.RED) {
         codes = [91, 39];
@@ -439,8 +436,6 @@ const renderWalkMap = (inputMap: string[][], walkMaps: Map<string, string>[], co
                 isStart = false;
                 continue;
             }
-            // console.log('key', key);
-            // console.log('value', value);
             const srcCoord = stringToCoord(src);
             map[srcCoord.row][srcCoord.col] = colorCodes[0] + (renderNumber ? (step % 10) : map[srcCoord.row][srcCoord.col]) + colorCodes[1] + '\x1b[0m';
             step++;
@@ -467,29 +462,6 @@ const renderScanMap = (inputMap: string[][], pipeLoopMap: Map<string, string>, s
     for (const [dest, src] of pipeLoopMap) {
         const srcCoord = stringToCoord(src);
         let loopSymbol: string = inputMap[srcCoord.row][srcCoord.col];
-        // switch (loopSymbol) {
-        //     case '|':
-        //         loopSymbol = '│';
-        //         break;
-        //     case '-':
-        //         loopSymbol = '─';
-        //         break;
-        //     case 'L':
-        //         loopSymbol = '└';
-        //         break;
-        //     case 'F':
-        //         loopSymbol = '┌';
-        //         break;
-        //     case '7':
-        //         loopSymbol = '┐';
-        //         break;
-        //     case 'J':
-        //         loopSymbol = '┘';
-        //         break;
-        //     default:
-        //         break;
-        // }
-
         map[srcCoord.row][srcCoord.col] = getColorText(loopSymbol, Colors.RED);
     }
 
@@ -690,12 +662,9 @@ export async function day10() {
         pipeLoopMap.set(dest, src);
     }
 
-    // console.log('pipeLoopMap', pipeLoopMap);
-    // await waitKeyInput('pipeLoopMap pause');
-
     renderWalkMap(tiles, [pipeLoopMap], [Colors.BLUE], true);
 
-    // scan tile around pipe loop
+    // scan tile around pipe loop and mark side type
     let scanMap = new Map<string, ScanDetail>();
     for (const [dest, src] of pipeLoopMap) {
         const srcCoord = stringToCoord(src);
@@ -710,18 +679,12 @@ export async function day10() {
             directionRightTiles: relativeRightTiles,
             prevTile: srcCoord
         });
-
-        // console.clear();
-        // renderScanMap(tiles, pipeLoopMap, scanMap, destCoord);
-        // await waitKeyInput();
     }
 
     console.log('scanmap');
     renderScanMap(tiles, pipeLoopMap, scanMap);
-    // await waitKeyInput();
 
-
-    // flood all side tiles from scan info
+    // flood all side type tile to count area
 
     // flood step 1: init flood tile
     const leftSideFlood = new Set<string>();
@@ -760,10 +723,6 @@ export async function day10() {
                 tilesToExpandFlood.push(adjacentTileCoord);
             }
         }
-
-        // console.clear();
-        // renderFloodMap(tiles, pipeLoopMap, [leftSideFlood], ['X'], [Colors.BLUE], stringToCoord(tile));
-        // await sleep(500);
     }
 
     console.log('leftSideFlood');
@@ -784,15 +743,10 @@ export async function day10() {
                 tilesToExpandFlood.push(adjacentTileCoord);
             }
         }
-
-        // console.clear();
-        // renderFloodMap(tiles, pipeLoopMap, [rightSideFlood], ['Y'], [Colors.BLUE], stringToCoord(tile));
-        // await sleep(500);
     }
-
 
     renderFloodMap(tiles, pipeLoopMap, [leftSideFlood, rightSideFlood], ['X', 'Y'], [Colors.MAGENTA, Colors.GREEN]);
 
-    console.log('X count', leftSideFlood.size);
-    console.log('Y count', rightSideFlood.size);
+    console.log('left side count', leftSideFlood.size);
+    console.log('right side count', rightSideFlood.size);
 }
