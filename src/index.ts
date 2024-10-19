@@ -10,6 +10,7 @@ import { day8 } from './day8/day8';
 import { day9 } from './day9/day9';
 import { day10 } from './day10/day10';
 import { day10_ai } from './day10/day10_ai';
+import { day11 } from './day11/day11';
 // day10();
 
-day10();
+day11();
