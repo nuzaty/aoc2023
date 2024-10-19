@@ -11,6 +11,8 @@ const renderTiles = (tiles: string[][]) => {
 }
 export async function day11() {
 
+    const isPart1 = false;
+
     let rowIndex: number = 0;
     let colIndex: number = 0;
     let tiles: string[][] = [];
@@ -67,20 +69,22 @@ export async function day11() {
     }
     console.log('emptyColIndices', emptyColIndices);
 
-    // step 4 : double empty row (cosmic expansion: row)
-    let addedRow = 0;
+    // step 4 : expand empty row (cosmic expansion: row)
+    let rowExpandType = 'A'; // virtual expand replacement symbol
+
     for (const emptyRowIndex of emptyRowIndices) {
-        tiles.splice(emptyRowIndex + addedRow, 0, Array(totalCol).fill('.'));
-        addedRow++;
+        tiles.splice(emptyRowIndex, 1, Array(totalCol).fill(rowExpandType));
     }
 
-    // step 5 : double empty column (cosmic expansion: column)
-    let addedCol = 0;
+    // step 5 : expand empty column (cosmic expansion: column)
+    let colExpandType = 'B'; // virtual expand replacement symbol
+    let stackExpandType = 'C'; // symbol in case expand both (row & column)
+
     for (const emptyColIndex of emptyColIndices) {
         for (const row of tiles) {
-            row.splice(emptyColIndex + addedCol, 0, '.');
+            const char = row[emptyColIndex];
+            row.splice(emptyColIndex, 1, char === rowExpandType ? stackExpandType : colExpandType);
         }
-        addedCol++;
     }
 
     console.log('expanded tiles:');
@@ -90,15 +94,36 @@ export async function day11() {
     let galaxyNum = 1;
     let galaxyLocations = new Map<number, number[]>();
     rowIndex = 0;
+    let rowPositionOffset = 0;
     for (const row of tiles) {
         colIndex = 0;
+        let isExpandedRow = false;
+        let colPositionOffset = 0;
         for (const colChar of row) {
             if (colChar === '#') {
                 tiles[rowIndex][colIndex] = galaxyNum.toString();
-                galaxyLocations.set(galaxyNum, [rowIndex, colIndex]);
+                galaxyLocations.set(galaxyNum, [rowIndex + rowPositionOffset, colIndex + colPositionOffset]);
                 galaxyNum++;
+            } else {
+                if (colChar === 'A') {
+                    isExpandedRow = true;
+                    break;
+                }
+                if (colChar === 'B') {
+                    if (isPart1)
+                        colPositionOffset += 1;
+                    else
+                        colPositionOffset += 999999;
+                }
             }
             colIndex++;
+        }
+        if (isExpandedRow) {
+            if (isPart1) {
+                rowPositionOffset += 1;
+            } else {
+                rowPositionOffset += 999999;
+            }
         }
         rowIndex++;
     }
@@ -119,7 +144,7 @@ export async function day11() {
 
     console.log('galaxyPairs:', galaxyPairs, 'total pairs', galaxyPairs.length);
 
-    // step 8 : find all pair length & sum all length (PART 1 Answer!)
+    // step 8 : find all pair length & sum all length (PART 1 & 2 Answer!)
     const galaxyPairLengths = new Map<string, number>();
     let sumOfGalaxyPairLengths = 0;
     for (const galaxyPair of galaxyPairs) {
@@ -130,20 +155,25 @@ export async function day11() {
         let stepCount = 0;
 
         while (currRow !== targetRow || currCol !== targetCol) {
+            let diffStep = 0;
             if (currRow > targetRow) {
                 // go UP
-                currRow--;
+                diffStep = currRow - targetRow;
+                currRow -= diffStep;
             } else if (currRow < targetRow) {
                 // go DOWN
-                currRow++;
+                diffStep = targetRow - currRow;
+                currRow += diffStep;
             } else if (currCol > targetCol) {
                 // go LEFT
-                currCol--;
+                diffStep = currCol - targetCol;
+                currCol -= diffStep;
             } else if (currCol < targetCol) {
                 // go RIGHT
-                currCol++;
+                diffStep = targetCol - currCol;
+                currCol += diffStep;
             }
-            stepCount++;
+            stepCount += diffStep;
 
             // console.log(galaxyPair, 'currRow', currRow, 'currCol', currCol, 'targetRow', targetRow, 'targetCol', targetCol);
             // await waitKeyInput();
