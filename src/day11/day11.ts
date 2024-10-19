@@ -1,5 +1,4 @@
-import { readLines, waitKeyInput } from "../utils";
-
+import { readLines } from "../utils";
 
 const renderTiles = (tiles: string[][]) => {
     for (const row of tiles) {
@@ -152,35 +151,37 @@ export async function day11() {
         const secondGalaxyLocation: number[] = galaxyLocations.get(galaxyPair[1])!;
         const [targetRow, targetCol] = firstGalaxyLocation;
         let [currRow, currCol] = secondGalaxyLocation;
-        let stepCount = 0;
+        let distance = Math.abs(targetRow - currRow) + Math.abs(targetCol - currCol);
+        // let stepCount = 0;
 
-        while (currRow !== targetRow || currCol !== targetCol) {
-            let diffStep = 0;
-            if (currRow > targetRow) {
-                // go UP
-                diffStep = currRow - targetRow;
-                currRow -= diffStep;
-            } else if (currRow < targetRow) {
-                // go DOWN
-                diffStep = targetRow - currRow;
-                currRow += diffStep;
-            } else if (currCol > targetCol) {
-                // go LEFT
-                diffStep = currCol - targetCol;
-                currCol -= diffStep;
-            } else if (currCol < targetCol) {
-                // go RIGHT
-                diffStep = targetCol - currCol;
-                currCol += diffStep;
-            }
-            stepCount += diffStep;
+        // while (currRow !== targetRow || currCol !== targetCol) {
+        //     let diffStep = 0;
+        //     if (currRow > targetRow) {
+        //         // go UP
+        //         diffStep = currRow - targetRow;
+        //         currRow -= diffStep;
+        //     } else if (currRow < targetRow) {
+        //         // go DOWN
+        //         diffStep = targetRow - currRow;
+        //         currRow += diffStep;
+        //     } else if (currCol > targetCol) {
+        //         // go LEFT
+        //         diffStep = currCol - targetCol;
+        //         currCol -= diffStep;
+        //     } else if (currCol < targetCol) {
+        //         // go RIGHT
+        //         diffStep = targetCol - currCol;
+        //         currCol += diffStep;
+        //     }
+        //     stepCount += diffStep;
 
-            // console.log(galaxyPair, 'currRow', currRow, 'currCol', currCol, 'targetRow', targetRow, 'targetCol', targetCol);
-            // await waitKeyInput();
-        }
+        //     // console.log(galaxyPair, 'currRow', currRow, 'currCol', currCol, 'targetRow', targetRow, 'targetCol', targetCol);
+        //     // await waitKeyInput();
+        // }
+        // stepCount
 
-        sumOfGalaxyPairLengths += stepCount;
-        galaxyPairLengths.set(galaxyPair.toString(), stepCount);
+        sumOfGalaxyPairLengths += distance;
+        galaxyPairLengths.set(galaxyPair.toString(), distance);
         // console.log('galaxyPairLengths', galaxyPairLengths);
         // await waitKeyInput();
     }
