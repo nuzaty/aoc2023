@@ -16,49 +16,6 @@ type Step3Data = [
     possibleArrLength: number,
 ]
 
-const generateNumsArray = (maxNum: number, arrLength: number): number[][] => {
-    let numsArray: number[][] = [];
-
-    for (let i = 0; i < arrLength; i++) {
-        let newNumsArray: number[][] = [];
-
-        for (let num = 0; num <= maxNum; num++) {
-            if (numsArray.length === 0) {
-                newNumsArray.push([num]);
-            } else {
-                newNumsArray.push(...numsArray.map(el => [num].concat(el)));
-            }
-        }
-        numsArray = newNumsArray;
-    }
-
-    return numsArray;
-}
-
-// numContraints - [min,max] of each generated num
-const generateNumsFromSum = (sum: number, numCount: number, numContraints: number[][]): number[][] => {
-    const allNumsArray = generateNumsArray(sum, numCount);
-    const possibleNumsArray = [];
-    for (const nums of allNumsArray) {
-        const sumOfNums = nums.reduce((prev, el) => prev + el, 0);
-        if (sumOfNums === sum) {
-            let isMatchContraints = true;
-            for (let i = 0; i < numContraints.length; i++) {
-                const [min, max] = numContraints[i];
-                if (i < nums.length) {
-                    if (nums[i] < min || nums[i] > max) {
-                        isMatchContraints = false;
-                        break;
-                    }
-                }
-            }
-            if (isMatchContraints)
-                possibleNumsArray.push(nums);
-        }
-    }
-    return possibleNumsArray;
-}
-
 const readPuzzleInput = async (): Promise<InputData[]> => {
     const input: InputData[] = [];
     for await (const line of readLines('./src/day12/input.txt')) {
@@ -98,10 +55,30 @@ const isArrMatch = (arr: string, inputArr: string) => {
     return true;
 }
 
-export async function day12() {
-    // const numsFromSum: number[][] = generateNumsFromSum(6, 4, [[0, 6], [1, 6], [1, 6], [0, 6]]);
-    // console.log('numsFromSum', numsFromSum, numsFromSum.length);
+const combinationCountToGoodGroupCount = (combinationCount: number, maxSizePerGroup: number, totalGroup: number): number[] => {
+    const base = (maxSizePerGroup + 1);
+    let num = combinationCount;
+    let combination: number[] = [];
 
+    while (num > 0) {
+        const digit = num % base;
+        num = Math.floor(num / base);
+        combination.push(digit);
+    }
+
+
+    if (combination.length > totalGroup) {
+        throw new Error('combination length exceed limit!: [' + combination + '], ' + combinationCount + ', ' + maxSizePerGroup + ', ' + totalGroup);
+    }
+
+    if (combination.length < totalGroup) {
+        combination = [...combination, ...Array(totalGroup - combination.length).fill(0)]
+    }
+
+    return combination.reverse();
+}
+
+export async function day12() {
     // step 1 : read puzzle input
     const input = await readPuzzleInput();
     console.log(input);
@@ -121,12 +98,41 @@ export async function day12() {
         goodSpringContraints[0] = firstOrLastContraint;
         goodSpringContraints[possbileGoodGroupCount - 1] = firstOrLastContraint;
 
-        console.log('rowSize', rowSize, 'damagedCount', damagedCount, 'nonDamagedCount', nonDamagedCount, 'possbileGoodGroupCount', possbileGoodGroupCount);
-        console.log('goodSpringContraints', goodSpringContraints);
+        // console.log('rowSize', rowSize, 'damagedCount', damagedCount, 'nonDamagedCount', nonDamagedCount, 'possbileGoodGroupCount', possbileGoodGroupCount);
+        // console.log('goodSpringContraints', goodSpringContraints);
 
-        allGoodPossibleGroupSize.push([[inputSpringArr, damagedGroupSize], generateNumsFromSum(nonDamagedCount, possbileGoodGroupCount, goodSpringContraints)]);
+        // find possible combination with constain
+        const possibleArr: number[][] = [];
+        let combination: number[] = [];
+        let combinationCount = -1;
+        while (combination.length !== possbileGoodGroupCount || !combination.every(el => el === nonDamagedCount)) {
+            combinationCount++;
+            combination = combinationCountToGoodGroupCount(combinationCount, nonDamagedCount, possbileGoodGroupCount);
 
+            const sumOfCombination = combination.reduce((prev, el) => prev + el, 0);
+            if (sumOfCombination !== nonDamagedCount)
+                continue;
 
+            let isMatchContraints = true;
+            for (let i = 0; i < goodSpringContraints.length; i++) {
+                const [min, max] = goodSpringContraints[i];
+                if (i < combination.length) {
+                    if (combination[i] < min || combination[i] > max) {
+                        isMatchContraints = false;
+                        break;
+                    }
+                }
+            }
+            if (!isMatchContraints)
+                continue;
+
+            possibleArr.push(combination);
+
+            if (combination.every(el => el === nonDamagedCount))
+                break;
+        }
+
+        allGoodPossibleGroupSize.push([[inputSpringArr, damagedGroupSize], possibleArr]);
     }
 
     // step 3 : filter out good group size that not match with puzzle input
@@ -138,7 +144,7 @@ export async function day12() {
 
         filteredArrData.push([inputSpringArr, filteredArr, filteredArr.length]);
     }
-    console.log('filteredArrData', filteredArrData);
+    // console.log('filteredArrData', filteredArrData);
 
     // step 4 : calculate the sum of arrangement counts
     const sumOfArrCount = filteredArrData.reduce((prev, el) => prev + el[2], 0);
