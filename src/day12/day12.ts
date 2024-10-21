@@ -91,77 +91,86 @@ function newGoodSpringData(nextPermutaions: SpringPermutationData[], currData: S
 }
 
 export async function day12() {
+    let possibleArrangementCount = 0;
 
-    // test input
-    const springRecord = '?###????????';
-    const badAmountRecord: number[] = spiltWith(',', '3,2,1').map(el => Number(el));
+    // read puzzle input
+    for await (const line of readLines('./src/day12/input.txt')) {
+        const token = spiltWithSpace(line);
+        const springRecord = Array(5).fill(token[0]).join('?');
+        const badAmountRecord: number[] = spiltWith(',', Array(5).fill(token[1]).join(',')).map(el => Number(el));
 
-    let currentPermutaions: SpringPermutationData[] = [];
+        console.log(springRecord);
+        console.log(badAmountRecord);
 
-    for (let i = 0; i < springRecord.length; i++) {
-        const currSpring = springRecord[i];
-        const nextPermutaions: SpringPermutationData[] = [];
+        let currentPermutaions: SpringPermutationData[] = [];
 
-        // initital permutaion data & process for first time
-        if (i === 0) {
-            const permutationData: PermutationData = {
-                group: 0,
-                badAmount: 0,
-                permutation: 1,
-            };
-            const initData: SpringPermutationData = {
-                permutationData: permutationData,
-                currSpring: '',
-                currIndex: i,
-                remainingSpring: springRecord.length - 1 - i
-            };
+        for (let i = 0; i < springRecord.length; i++) {
+            const currSpring = springRecord[i];
+            const nextPermutaions: SpringPermutationData[] = [];
 
-            if (currSpring === '?') {
-                nextPermutaions.push({ ...initData, permutationData: { ...permutationData, badAmount: 1 }, currSpring: '#' });
-                nextPermutaions.push({ ...initData, currSpring: '.' });
-            } else if (currSpring === '#') {
-                nextPermutaions.push({ ...initData, permutationData: { ...permutationData, badAmount: 1 }, currSpring: currSpring });
-            } else if (currSpring === '.') {
-                nextPermutaions.push({ ...initData, currSpring: currSpring });
-            }
-        } else {
-            for (const currentPermutaion of currentPermutaions) {
-                const { permutationData } = currentPermutaion;
-
-                const currData: SpringPermutationData = {
+            // initital permutaion data & process for first time
+            if (i === 0) {
+                const permutationData: PermutationData = {
+                    group: 0,
+                    badAmount: 0,
+                    permutation: 1,
+                };
+                const initData: SpringPermutationData = {
                     permutationData: permutationData,
-                    currSpring: currSpring,
+                    currSpring: '',
                     currIndex: i,
                     remainingSpring: springRecord.length - 1 - i
                 };
 
                 if (currSpring === '?') {
-                    // case good spring (.)
-                    newGoodSpringData(nextPermutaions, currData, badAmountRecord)
-                    // case bad spring (#)
-                    addBadSpringData(nextPermutaions, currData, badAmountRecord);
+                    nextPermutaions.push({ ...initData, permutationData: { ...permutationData, badAmount: 1 }, currSpring: '#' });
+                    nextPermutaions.push({ ...initData, currSpring: '.' });
                 } else if (currSpring === '#') {
-                    addBadSpringData(nextPermutaions, currData, badAmountRecord);
+                    nextPermutaions.push({ ...initData, permutationData: { ...permutationData, badAmount: 1 }, currSpring: currSpring });
                 } else if (currSpring === '.') {
-                    newGoodSpringData(nextPermutaions, currData, badAmountRecord)
+                    nextPermutaions.push({ ...initData, currSpring: currSpring });
+                }
+            } else {
+                for (const currentPermutaion of currentPermutaions) {
+                    const { permutationData } = currentPermutaion;
+
+                    const currData: SpringPermutationData = {
+                        permutationData: permutationData,
+                        currSpring: currSpring,
+                        currIndex: i,
+                        remainingSpring: springRecord.length - 1 - i
+                    };
+
+                    if (currSpring === '?') {
+                        // case good spring (.)
+                        newGoodSpringData(nextPermutaions, currData, badAmountRecord)
+                        // case bad spring (#)
+                        addBadSpringData(nextPermutaions, currData, badAmountRecord);
+                    } else if (currSpring === '#') {
+                        addBadSpringData(nextPermutaions, currData, badAmountRecord);
+                    } else if (currSpring === '.') {
+                        newGoodSpringData(nextPermutaions, currData, badAmountRecord)
+                    }
                 }
             }
+
+            currentPermutaions = nextPermutaions;
         }
 
-        currentPermutaions = nextPermutaions;
+        // select Permutaions that match with record
+        const matchGroup1 = badAmountRecord.length - 1;
+        const matchAmount1 = badAmountRecord[matchGroup1];
+        const matchGroup2 = badAmountRecord.length;
+        const matchAmount2 = 0;
+
+        const sumSelectedPermutaions = currentPermutaions
+            .filter(({ permutationData }) =>
+                (permutationData.group === matchGroup1 && permutationData.badAmount === matchAmount1)
+                || (permutationData.group === matchGroup2 && permutationData.badAmount === matchAmount2))
+            .reduce((prev, el) => prev + el.permutationData.permutation, 0);
+
+        possibleArrangementCount += sumSelectedPermutaions;
     }
 
-    // select Permutaions that match with record
-    const matchGroup1 = badAmountRecord.length - 1;
-    const matchAmount1 = badAmountRecord[matchGroup1];
-    const matchGroup2 = badAmountRecord.length;
-    const matchAmount2 = 0;
-
-    const sumSelectedPermutaions = currentPermutaions
-        .filter(({ permutationData }) =>
-            (permutationData.group === matchGroup1 && permutationData.badAmount === matchAmount1)
-            || (permutationData.group === matchGroup2 && permutationData.badAmount === matchAmount2))
-        .reduce((prev, el) => prev + el.permutationData.permutation, 0);
-
-    console.log('sumSelectedPermutaions', sumSelectedPermutaions);
+    console.log('possibleArrangementCount', possibleArrangementCount);
 }
