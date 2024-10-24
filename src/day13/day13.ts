@@ -1,17 +1,18 @@
-import { readLines, spiltWith, spiltWithSpace } from "../utils";
-
+import { readLines, spiltWith, spiltWithSpace, waitKeyInput } from "../utils";
+import fs from "fs";
 
 type ReflectData = {
     count: number,
     reflectType: string
 }
 
-function findReflection(grid: string[][]): ReflectData {
+function findReflection(grid: string[][], throwError: boolean, onlyOne: boolean): ReflectData[] {
     const rowCount = grid.length;
     const colCount = grid[0].length;
     const midColPos = Math.floor((colCount - 1) / 2);
     const midRowPos = Math.floor((rowCount - 1) / 2);
 
+    const reflectData: ReflectData[] = [];
     // check veritcal relect
     const allRowReflectPos: number[][] = [];
 
@@ -54,17 +55,24 @@ function findReflection(grid: string[][]): ReflectData {
             return { pos: el, diff: el - midColPos };
         })
 
-        if (diffIntersectPos.length > 0) {
-            let lastDiff: number = Infinity;
-            let selectedPos = -1;
-            for (const { pos, diff } of diffIntersectPos) {
-                if (diff < lastDiff) {
-                    lastDiff = diff;
-                    selectedPos = pos;
+        if (onlyOne) {
+            if (diffIntersectPos.length > 0) {
+                let lastDiff: number = Infinity;
+                let selectedPos = -1;
+                for (const { pos, diff } of diffIntersectPos) {
+                    if (diff < lastDiff) {
+                        lastDiff = diff;
+                        selectedPos = pos;
+                    }
                 }
-            }
-            return { count: selectedPos + 1, reflectType: 'vert' };
+                reflectData.push({ count: selectedPos + 1, reflectType: 'vert' });
 
+            }
+        } else {
+            // ADD ALL!
+            for (const { pos } of diffIntersectPos) {
+                reflectData.push({ count: pos + 1, reflectType: 'vert' });
+            }
         }
     }
     // console.log('no vertical reflect');
@@ -112,27 +120,39 @@ function findReflection(grid: string[][]): ReflectData {
         }).map(el => {
             return { pos: el, diff: el - midRowPos };
         })
-        if (diffIntersectPos.length > 0) {
-            let lastDiff: number = Infinity;
-            let selectedPos = -1;
-            for (const { pos, diff } of diffIntersectPos) {
-                if (diff < lastDiff) {
-                    lastDiff = diff;
-                    selectedPos = pos;
+
+        if (onlyOne) {
+            if (diffIntersectPos.length > 0) {
+                let lastDiff: number = Infinity;
+                let selectedPos = -1;
+                for (const { pos, diff } of diffIntersectPos) {
+                    if (diff < lastDiff) {
+                        lastDiff = diff;
+                        selectedPos = pos;
+                    }
                 }
+                reflectData.push({ count: selectedPos + 1, reflectType: 'horiz' });
             }
-            return { count: selectedPos + 1, reflectType: 'horiz' };
+        }
+        else {
+            // ADD ALL!
+            for (const { pos } of diffIntersectPos) {
+                reflectData.push({ count: pos + 1, reflectType: 'horiz' });
+            }
         }
     }
 
-    throw new Error('wtf no reflection! grid: ' + grid);
+    if (throwError && reflectData.length === 0)
+        throw new Error('wtf no reflection! grid: ' + grid);
+    else
+        return reflectData;
 }
 
 export async function day13() {
+    fs.writeFileSync('./log.txt', '');
+
     let grid: string[][] = [];
     let grids: string[][][] = [];
-
-    const part1 = true;
 
     // step 1 : read puzzle input
     for await (const line of readLines('./src/day13/input.txt')) {
@@ -153,11 +173,77 @@ export async function day13() {
 
     // step 2 : check reflection
     let summarizeResult = 0;
+    let allReflectionData = new Map<number, ReflectData>();
     grids.forEach((grid, gridIndex) => {
-        const { count, reflectType } = findReflection(grid);
-        if (reflectType === 'horiz') summarizeResult += count * 100;
-        else summarizeResult += count;
+        const reflectData = findReflection(grid, true, false);
+        const { count, reflectType } = reflectData[0];
+        if (reflectType === 'horiz')
+            summarizeResult += count * 100;
+        else
+            summarizeResult += count;
+
+        // Save info to use in PART 2
+        allReflectionData.set(gridIndex, reflectData[0]);
     });
 
     console.log('summarizeResult', summarizeResult);
+
+    // PART 2
+    // Find smudge and calculate new summarize result
+
+    let newSummarizeResult = 0;
+    grids.forEach(async (grid, gridIndex) => {
+        // Try to swap each mirror data and calculate new relection line
+        for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < grid[0].length; colIndex++) {
+                const newGrid = grid.map(row => [...row]);
+                // Try to fix the smudge
+                if (grid[rowIndex][colIndex] === '#') {
+                    newGrid[rowIndex][colIndex] = '.';
+                } else {
+                    newGrid[rowIndex][colIndex] = '#';
+                }
+
+                const { count: oldCount, reflectType: oldType } = allReflectionData.get(gridIndex)!;
+                const newReflectionData = findReflection(newGrid, false, false);
+
+                // fs.appendFileSync('./log.txt', '\n');
+                // for (const row of newGrid) {
+                //     for (const colChar of row) {
+                //         fs.appendFileSync('./log.txt', colChar);
+                //     }
+                //     fs.appendFileSync('./log.txt', '\n');
+                // }
+                // fs.appendFileSync('./log.txt', ' gridIndex ' + gridIndex + ' rowIndex ' + rowIndex + ' colIndex ' + colIndex + ' ' + JSON.stringify(newReflectionData));
+                // console.clear();
+
+                // console.log('gridIndex', gridIndex, 'rowIndex', rowIndex, 'colIndex', colIndex, newReflectionData);
+
+                if (newReflectionData.length === 0)
+                    continue;
+
+                // Check if reflection change, then calculate new summarize result
+                let foundNewReflection = false;
+                newReflectionData.forEach(({ count: newCount, reflectType: newType }) => {
+                    if (oldCount !== newCount || oldType !== newType) {
+                        if (newType === 'horiz')
+                            newSummarizeResult += newCount * 100;
+                        else
+                            newSummarizeResult += newCount;
+
+                        foundNewReflection = true;
+                        return;
+                    }
+                });
+
+                if (foundNewReflection)
+                    return;
+            }
+        }
+
+        console.log('warning no new relection line!', 'gridIndex', gridIndex);
+        // throw new Error('cannot find the smudge. gridIndex: ' + gridIndex);
+    });
+
+    console.log('newSummarizeResult', newSummarizeResult);
 }
