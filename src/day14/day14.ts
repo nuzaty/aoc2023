@@ -118,9 +118,9 @@ function tiltEast(tiles: string[][]) {
     }
 }
 
-function findRepeatPattern(arr: number[]): CycleData {
+function findRepeatPattern(arr: number[], minPatternLength: number = 1): CycleData {
     const cycleData: CycleData = { cycle: [] };
-    for (let patternLength = 1; patternLength <= Math.floor(arr.length / 2); patternLength++) {
+    for (let patternLength = minPatternLength; patternLength <= Math.floor(arr.length / 2); patternLength++) {
         const potentialPattern = arr.slice(-patternLength);
         // console.log(potentialPattern);
         let validPattern = true;
@@ -193,7 +193,7 @@ export default async function () {
             platformLoads.push(findTotalLoad(tiles));
 
             if (i % cycleCheckRepeat === 0) {
-                const { cycle: pattern } = findRepeatPattern(platformLoads);
+                const { cycle: pattern } = findRepeatPattern(platformLoads, 10);
                 if (pattern.length > 0) {
                     const remainingCycle = cycleCount - platformLoads.length;
                     const patternIndex = (remainingCycle % pattern.length) - 1;
