@@ -13,5 +13,6 @@ import { day10_ai } from './day10/day10_ai';
 import { day11 } from './day11/day11';
 import { day12 } from './day12/day12';
 import { day13 } from './day13/day13';
+import day14 from './day14/day14';
 
-day13();
+day14();
