@@ -141,6 +141,39 @@ function getPassedTileNote(currPos: Position, currDirection: Direction) {
     return positionToString(currPos) + currDirection;
 }
 
+function findTotalEnergizedTiles(tiles: string[][], startPos: Position, headingDirection: Direction): number {
+    const energizedTiles = new Set<string>();
+    const passedTiles = new Set<string>();
+
+    let currPositions: Position[] = [startPos];
+    let currDirections: Direction[] = [headingDirection];
+
+    while (currPositions.length > 0) {
+        const currPos = currPositions.shift() as Position;
+        const currDirection = currDirections.shift() as Direction;
+        const passedTileNote = getPassedTileNote(currPos, currDirection);
+
+        // skip if the beam has already pass with same direction
+        if (!passedTiles.has(passedTileNote)) {
+            // update passed note
+            passedTiles.add(passedTileNote);
+            // update energized tiles
+            energizedTiles.add(positionToString(currPos));
+
+            const currTile = getTile(tiles, currPos);
+            const nextDirection: Direction[] = getNextDirection(currTile, currDirection);
+            const next = nextDirection
+                .map(v => [v, getNextPos(currPos, v)])
+                .filter(v => isValidPosition(tiles, v[1] as Position));
+
+            currDirections.push(...next.map(v => v[0] as Direction));
+            currPositions.push(...next.map(v => v[1] as Position));
+        }
+    }
+
+    return energizedTiles.size;
+}
+
 export default async function () {
     const isPart1 = true;
 
@@ -155,51 +188,10 @@ export default async function () {
     }
 
     // step 2 : simulate light beam
-    const energizedTiles = new Set<string>();
-    const passedTiles = new Set<string>();
-
-    let currPositions: Position[] = [{row: 0, col: 0}]; // the beam enters in the top-left corner
-    let currDirections: Direction[] = [Direction.Right] // and heading to the right
-
-    while (currPositions.length > 0) {
-        // console.log('in queue', currPositions);
-
-        const currPos = currPositions.shift() as Position;
-        const currDirection = currDirections.shift() as Direction;
-        const passedTileNote = getPassedTileNote(currPos, currDirection);
-
-        // console.log('currPos', currPos, 'currDirection', currDirection, 'passedTileNote', passedTileNote);
-
-        // skip if the beam has already pass with same direction
-        if (!passedTiles.has(passedTileNote)) {
-            // update passed note
-            passedTiles.add(passedTileNote);
-            // update energized tiles
-            energizedTiles.add(positionToString(currPos));
-
-            const currTile = getTile(tiles, currPos);
-
-            console.log('currTile', currTile);
-
-            const nextDirection: Direction[] = getNextDirection(currTile, currDirection);
-            const next = nextDirection
-                .map(v => [v, getNextPos(currPos, v)])
-                .filter(v => isValidPosition(tiles, v[1] as Position));
-
-            currDirections.push(...next.map(v => v[0] as Direction));
-            currPositions.push(...next.map(v => v[1] as Position));
-        }
-
-        // console.log(energizedTiles);
-
-        // console.log('passedTiles', passedTiles);
-
-        // renderEnergizedTile(tiles, energizedTiles);
-
-        // await waitKeyInput();
+    if (isPart1) {
+        // the beam enters in the top-left cornerand heading to the right
+        const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row: 0, col: 0}, Direction.Right);
+        console.log(totalEnergizedTiles);
+    } else {
     }
-
-    renderEnergizedTile(tiles, energizedTiles);
-
-    console.log("energizedTiles.size", energizedTiles.size);
 }
