@@ -175,7 +175,7 @@ function findTotalEnergizedTiles(tiles: string[][], startPos: Position, headingD
 }
 
 export default async function () {
-    const isPart1 = true;
+    const isPart1 = false;
 
     // step 1 : read input into array
     const tiles: string[][] = [];
@@ -193,5 +193,39 @@ export default async function () {
         const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row: 0, col: 0}, Direction.Right);
         console.log(totalEnergizedTiles);
     } else {
+        const rowLength = tiles.length;
+        const colLength = tiles[0].length;
+
+        let maxEnergizedTiles = 0;
+
+        // heading right (enter from the left)
+        for (let row = 0; row < rowLength; row++) {
+            const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row, col: 0}, Direction.Right);
+            if (totalEnergizedTiles > maxEnergizedTiles)
+                maxEnergizedTiles = totalEnergizedTiles;
+        }
+
+        // heading left (enter from the right)
+        for (let row = 0; row < rowLength; row++) {
+            const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row, col: colLength - 1}, Direction.Left);
+            if (totalEnergizedTiles > maxEnergizedTiles)
+                maxEnergizedTiles = totalEnergizedTiles;
+        }
+
+        // heading downward (enter from the top)
+        for (let col = 0; col < colLength; col++) {
+            const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row: 0, col}, Direction.Down);
+            if (totalEnergizedTiles > maxEnergizedTiles)
+                maxEnergizedTiles = totalEnergizedTiles;
+        }
+
+        // heading upward (enter from the bottom)
+        for (let col = 0; col < colLength; col++) {
+            const totalEnergizedTiles = findTotalEnergizedTiles(tiles, {row: rowLength - 1, col}, Direction.Up);
+            if (totalEnergizedTiles > maxEnergizedTiles)
+                maxEnergizedTiles = totalEnergizedTiles;
+        }
+
+        console.log('maxEnergizedTiles', maxEnergizedTiles);
     }
 }
