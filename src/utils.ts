@@ -41,3 +41,37 @@ export function waitKeyInput(text?: string) {
     resolve(ans);
   }))
 }
+
+export enum Colors {
+  Red,
+  Blue,
+  Yellow,
+  Green,
+  Magenta,
+};
+
+
+export function colorToConsoleCode(color: Colors): string[] {
+  let codes: number[] = [];
+
+  if (color === Colors.Blue) {
+    codes = [94, 39];
+  } else if (color === Colors.Red) {
+    codes = [91, 39];
+  } else if (color === Colors.Yellow) {
+    codes = [93, 39];
+  } else if (color === Colors.Green) {
+    codes = [92, 39];
+  } else if (color === Colors.Magenta) {
+    codes = [95, 39];
+  } else {
+    throw new Error('Unknown color: ' + color);
+  }
+
+  return ['\x1b[' + codes[0] + 'm', '\x1b[' + codes[1] + 'm'];
+}
+
+export function getColorText(text: string, color: Colors): string {
+  let codes = colorToConsoleCode(color);
+  return codes[0] + text + codes[1] + '\x1b[0m';
+}
