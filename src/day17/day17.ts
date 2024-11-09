@@ -60,76 +60,6 @@ function directionToArrow(direction: Direction): string {
     }
 }
 
-
-// TODO: Need refactor to better readability
-function getNeighbors(tiles: string[][], {tile: {row, col}, distance, direction}: Frontier): Frontier[] {
-    const neighbors: Frontier[] = []
-
-    switch (direction) {
-        case Direction.Left:
-            // left
-            if (col - 1 >= 0)
-                neighbors.push({tile: {row, col: col - 1}, distance: distance + 1, direction: Direction.Left});
-            // up
-            if (row - 1 >= 0)
-                neighbors.push({tile: {row: row - 1, col}, distance: 1, direction: Direction.Up});
-            // down
-            if (row + 1 < tiles.length)
-                neighbors.push({tile: {row: row + 1, col}, distance: 1, direction: Direction.Down});
-            break;
-        case Direction.Right:
-            // right
-            if (col + 1 < tiles[0].length)
-                neighbors.push({tile: {row, col: col + 1}, distance: distance + 1, direction: Direction.Right});
-            // up
-            if (row - 1 >= 0)
-                neighbors.push({tile: {row: row - 1, col}, distance: 1, direction: Direction.Up});
-            // down
-            if (row + 1 < tiles.length)
-                neighbors.push({tile: {row: row + 1, col}, distance: 1, direction: Direction.Down});
-            break;
-        case Direction.Up:
-            // left
-            if (col - 1 >= 0)
-                neighbors.push({tile: {row, col: col - 1}, distance: 1, direction: Direction.Left});
-            // right
-            if (col + 1 < tiles[0].length)
-                neighbors.push({tile: {row, col: col + 1}, distance: 1, direction: Direction.Right});
-            // up
-            if (row - 1 >= 0)
-                neighbors.push({tile: {row: row - 1, col}, distance: distance + 1, direction: Direction.Up});
-            break;
-        case Direction.Down:
-            // left
-            if (col - 1 >= 0)
-                neighbors.push({tile: {row, col: col - 1}, distance: 1, direction: Direction.Left});
-            // right
-            if (col + 1 < tiles[0].length)
-                neighbors.push({tile: {row, col: col + 1}, distance: 1, direction: Direction.Right});
-            // down
-            if (row + 1 < tiles.length)
-                neighbors.push({tile: {row: row + 1, col}, distance: distance + 1, direction: Direction.Down});
-            break;
-        default:
-            throw new Error('Unknown direction: ' + direction);
-    }
-
-    return neighbors;
-}
-
-function getDirection(src: Position, dest: Position): Direction {
-    console.log('getDirection', src, dest)
-    if (src.row < dest.row) {
-        return Direction.Down;
-    } else if (src.row > dest.row) {
-        return Direction.Up;
-    } else if (src.col > dest.col) {
-        return Direction.Left;
-    } else if (src.col < dest.col) {
-        return Direction.Right;
-    }
-    throw new Error('Unknown direction!');
-}
 function cameFromToPath(start: Position, goalFrontier: Frontier, cameFrom: Map<string, CameFrom>): Map<string, Direction> {
     const path = new Map<string, Direction>();
 
@@ -165,6 +95,95 @@ function renderPath(tiles: string[][], path: Map<string, Direction>) {
     }
 }
 
+function moveAndUpdate(tiles: string[][],
+    costMap: Map<string, number>,
+    frontierQueue: PriorityQueue<Frontier>,
+    costSoFarMap: Map<string, number>, cameFrom: Map<string, CameFrom>,
+    frontier: Frontier, costSoFar: number, moveDirection: Direction, newDistance: number,
+    minDistance: number, start: Position, goal: Position) {
+
+    // find new position
+    const newPostion = {...frontier.tile};
+    switch (moveDirection) {
+        case Direction.Left:
+            newPostion.col -= 1;
+            break;
+        case Direction.Right:
+            newPostion.col += 1;
+            break;
+        case Direction.Up:
+            newPostion.row -= 1;
+            break;
+        case Direction.Down:
+            newPostion.row += 1;
+            break;
+        default:
+            throw new Error('Unknown direction: ' + moveDirection);
+    }
+
+
+    // bounds checking
+    if (newPostion.col < 0 || newPostion.row < 0)
+        return;
+    if (newPostion.col >= tiles[0].length || newPostion.row >= tiles.length)
+        return;
+
+    // calcuate new cost
+    const newCostSoFar = costSoFar + (costMap.get(positionToString(newPostion)) as number)
+
+    if (newPostion.row === goal.row && newPostion.col === goal.col && newDistance >= minDistance) {
+        console.log(">>>", newCostSoFar, "<<<");
+
+        const goalFrontier = {tile: newPostion, distance: newDistance, direction: moveDirection};
+        cameFrom.set(frontierToString(goalFrontier), {src: frontier, direction: moveDirection});
+        const path = cameFromToPath(start, goalFrontier, cameFrom);
+        // console.log(path);
+        renderPath(tiles, path);
+
+        process.exit();
+    }
+
+    // create new frontier
+    const newFrontier = {tile: newPostion, distance: newDistance, direction: moveDirection};
+
+    // checj if not seen
+    if (!costSoFarMap.has(frontierToString(newFrontier))) {
+        cameFrom.set(frontierToString(newFrontier), {src: frontier, direction: moveDirection});
+        costSoFarMap.set(frontierToString(newFrontier), newCostSoFar);
+        frontierQueue.enqueue(newFrontier, newCostSoFar);
+    }
+}
+
+function turnLeft(direction: Direction): Direction {
+    switch (direction) {
+        case Direction.Down:
+            return Direction.Right;
+        case Direction.Up:
+            return Direction.Left;
+        case Direction.Left:
+            return Direction.Down;
+        case Direction.Right:
+            return Direction.Up;
+        default:
+            throw new Error('Invalid direction');
+    }
+}
+function turnRight(direction: Direction): Direction {
+    switch (direction) {
+        case Direction.Down:
+            return Direction.Left;
+        case Direction.Up:
+            return Direction.Right;
+        case Direction.Left:
+            return Direction.Up;
+        case Direction.Right:
+            return Direction.Down;
+        default:
+            throw new Error('Invalid direction');
+    }
+}
+
+
 export default async function () {
     const isPart1 = false;
 
@@ -187,65 +206,44 @@ export default async function () {
 
 
     // step 2 : find path with the heat loss so far
+    const maxDistance = isPart1 ? 3 : 10;
+    const minDistance = isPart1 ? 1 : 4;
+
     const cameFrom = new Map<string, CameFrom>();
-    const costSoFar = new Map<string, number>();
-    const frontiers = new PriorityQueue<Frontier>(); // ref: https://www.redblobgames.com/pathfinding/a-star/introduction.html
+    const costSoFarMap = new Map<string, number>();
+    const frontierQueue = new PriorityQueue<Frontier>(); // ref: https://www.redblobgames.com/pathfinding/a-star/introduction.html
     const start = {row: 0, col: 0}; // The starting point is the top-left city block.
     const goal = {row: tiles.length - 1, col: tiles[0].length - 1}  // the destination is the bottom-right city block.
 
-    let goalFrontier: Frontier | undefined = undefined;
+    let startFrontier: Frontier = {tile: start, distance: 0, direction: Direction.None};
 
-    const frontierStart1 = {tile: start, distance: 1, direction: Direction.Right};
-    const frontierStart2 = {tile: start, distance: 1, direction: Direction.Down};
-    costSoFar.set(frontierToString(frontierStart1), 0);
-    costSoFar.set(frontierToString(frontierStart2), 0);
-    frontiers.enqueue(frontierStart1, 0);
-    frontiers.enqueue(frontierStart2, 0);
+    moveAndUpdate(tiles, heatLossMap, frontierQueue, costSoFarMap, cameFrom, startFrontier, 0, Direction.Right, 1, minDistance, start, goal);
+    moveAndUpdate(tiles, heatLossMap, frontierQueue, costSoFarMap, cameFrom, startFrontier, 0, Direction.Down, 1, minDistance, start, goal);
 
-    while (frontiers.size() > 0) {
+    // console.log("frontierQueue 1", util.inspect(frontierQueue, false, null, true));
 
-        // console.log('new frontiers', util.inspect(frontiers, false, null, true));
+    while (true) {
 
-        const frontier = frontiers.dequeue() as Frontier;
+        const {node: frontier, priority: costSoFar} = frontierQueue.dequeue() as {node: Frontier, priority: number};
+        const {direction, distance} = frontier;
 
-        // console.log('curr frontier', util.inspect(frontier, false, null, true));
-        // console.log('costSoFar', costSoFar);
-        // await waitKeyInput();
+        // console.log("frontier process", util.inspect(frontier, false, null, true));
+        // console.log("costSoFar", costSoFar);
 
-        const {tile} = frontier;
-
-        const currCostSoFar = costSoFar.get(frontierToString(frontier)) ?? 0;
-
-        if (tile.row === goal.row && tile.col === goal.col) {
-            goalFrontier = frontier;
-            console.log(">>>", currCostSoFar, "<<<");
-            break;
+        // go straight
+        if (distance < maxDistance) {
+            moveAndUpdate(tiles, heatLossMap, frontierQueue, costSoFarMap, cameFrom, frontier, costSoFar, direction, distance + 1, minDistance, start, goal);
         }
-
-        for (const nextFrontier of getNeighbors(tiles, frontier)) {
-            const {tile: next, distance, direction} = nextFrontier;
-            const nextPosStr = positionToString(next);
-            const currCost = (heatLossMap.get(nextPosStr) as number);
-            const newCostSoFar = currCostSoFar + currCost;
-
-            if (!costSoFar.has(frontierToString(nextFrontier)) && distance <= 3) {
-                costSoFar.set(frontierToString(nextFrontier), newCostSoFar);
-                frontiers.enqueue(nextFrontier, newCostSoFar);
-                cameFrom.set(frontierToString(nextFrontier), {src: frontier, direction: direction});
-
-            } else if (newCostSoFar < (costSoFar.get(nextPosStr) as number)) {
-                // TODO: case new path is lower cost
-                throw new Error("WTF! The new path is lower cost!");
-            }
+        // turn left and right
+        if (distance >= minDistance) {
+            moveAndUpdate(tiles, heatLossMap, frontierQueue, costSoFarMap, cameFrom, frontier, costSoFar, turnLeft(direction), 1, minDistance, start, goal);
+            moveAndUpdate(tiles, heatLossMap, frontierQueue, costSoFarMap, cameFrom, frontier, costSoFar, turnRight(direction), 1, minDistance, start, goal);
         }
-
         // console.log('costSoFar', costSoFar);
         // console.log('frontiers', util.inspect(frontiers, false, null, true));
         // console.log('cameFrom', cameFrom);
+        // console.log("frontierQueue after process", util.inspect(frontierQueue, false, null, true));
+
     }
-    if (goalFrontier) {
-        const path = cameFromToPath(start, goalFrontier, cameFrom);
-        console.log(path);
-        renderPath(tiles, path);
-    }
+
 }

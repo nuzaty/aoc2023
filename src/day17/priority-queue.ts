@@ -15,8 +15,8 @@ class PriorityQueue<Type> {
         }
     }
 
-    dequeue(): Type | undefined {
-        return this.values.shift()?.node;
+    dequeue(): {node: Type; priority: number;} | undefined {
+        return this.values.shift();
     }
 
     size(): number {
