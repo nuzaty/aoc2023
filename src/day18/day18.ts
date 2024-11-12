@@ -5,70 +5,116 @@ type Position = {
     y: number;
 };
 
-type DigInfo = {
-    pos: Position;
-    color: string;
-};
-
 function renderDigMap(
-    digLocations: DigInfo[],
-    floodLocations: Position[],
+    digVertices: Position[],
     xMin: number,
     xMax: number,
     yMin: number,
     yMax: number,
 ) {
-    for (let y = yMin; y <= yMax; y++) {
-        for (let x = xMin; x <= xMax; x++) {
-            if (floodLocations.some(pos => pos.x === x && pos.y === y))
-                process.stdout.write(getColorText('@', Colors.Blue));
-            else if (digLocations.some(({pos}) => pos.x === x && pos.y === y))
-                process.stdout.write(getColorText('#', Colors.Red));
-            else process.stdout.write('.');
+    const cols = xMax - xMin + 1;
+    const rows = yMax - yMin + 1;
+
+    const xToCol = (x: number): number => {
+        return x - xMin;
+    };
+    const yToRow = (y: number): number => {
+        return y - yMin;
+    };
+
+    const tiles: string[][] = Array.from({length: rows}, () =>
+        Array.from({length: cols}, () => '.'),
+    );
+
+    const digSymbol = getColorText('#', Colors.Red);
+
+    const paintDigSymbol = (
+        prevVertex: Position,
+        {x: digX, y: digY}: Position,
+    ) => {
+        if (prevVertex) {
+            if (prevVertex.x !== digX) {
+                // case x shift
+                if (prevVertex.x > digX) {
+                    for (let x = prevVertex.x; x > digX; x--) {
+                        tiles[yToRow(digY)][xToCol(x)] = digSymbol;
+                    }
+                } else {
+                    for (let x = prevVertex.x; x < digX; x++) {
+                        tiles[yToRow(digY)][xToCol(x)] = digSymbol;
+                    }
+                }
+            } else {
+                // case y shift
+                if (prevVertex.y > digY) {
+                    for (let y = prevVertex.y; y > digY; y--) {
+                        tiles[yToRow(y)][xToCol(digX)] = digSymbol;
+                    }
+                } else {
+                    for (let y = prevVertex.y; y < digY; y++) {
+                        tiles[yToRow(y)][xToCol(digX)] = digSymbol;
+                    }
+                }
+            }
+        }
+    };
+    let prevVertex: Position | undefined;
+    for (const digVertice of digVertices) {
+        if (prevVertex) paintDigSymbol(prevVertex, digVertice);
+        prevVertex = digVertice;
+    }
+    // handle case first and last vertices
+    paintDigSymbol(digVertices[digVertices.length - 1], digVertices[0]);
+
+    for (const row of tiles) {
+        for (const colChar of row) {
+            process.stdout.write(colChar);
         }
         process.stdout.write('\n');
     }
 }
 
-function getNeighbors(
-    xMin: number,
-    xMax: number,
-    yMin: number,
-    yMax: number,
-    {x, y}: Position,
-    digLocations: DigInfo[],
-): Position[] {
-    const neighbors: Position[] = [];
+function findPolygonArea(points: Position[]): number {
+    const n = points.length;
+    let area = 0;
+    for (let i = 0; i < n - 1; i++) {
+        area += points[i].x * points[i + 1].y - points[i + 1].x * points[i].y;
+    }
+    area += points[n - 1].x * points[0].y - points[0].x * points[n - 1].y;
+    area = Math.abs(area);
+    return area / 2;
+}
 
-    if (x - 1 >= xMin) {
-        neighbors.push({x: x - 1, y});
+function findPerimeterLen(points: Position[]) {
+    let prevPoint: Position | undefined;
+    let length = 0;
+    const findLength = (prevPoint: Position, point: Position): number => {
+        if (point.x !== prevPoint.x) {
+            return Math.abs(prevPoint.x - point.x);
+        } else {
+            return Math.abs(prevPoint.y - point.y);
+        }
+    };
+    for (const point of points) {
+        if (prevPoint) {
+            length += findLength(prevPoint, point);
+        }
+        prevPoint = point;
     }
-    if (x + 1 <= xMax) {
-        neighbors.push({x: x + 1, y});
-    }
-    if (y - 1 >= yMin) {
-        neighbors.push({x, y: y - 1});
-    }
-    if (y + 1 <= yMax) {
-        neighbors.push({x, y: y + 1});
-    }
-
-    return neighbors.filter(v => {
-        const digLocation = digLocations.find(
-            d => d.pos.x === v.x && d.pos.y === v.y,
-        );
-        return digLocation === undefined;
-    });
+    // handle first and last length
+    length += findLength(points[points.length - 1], points[0]);
+    return length;
 }
 
 export default async function () {
     // step 1 : read input into array
-    const digLocations: DigInfo[] = []; // the first location is 0,0
+    const digVertices: Position[] = [];
 
     let xMin = 0;
     let xMax = 0;
     let yMin = 0;
     let yMax = 0;
+    // the first location is 0,0
     let x = 0;
     let y = 0;
     for await (const line of readLines('./src/day18/input.txt')) {
@@ -76,28 +122,16 @@ export default async function () {
         const dtsNum = Number(distance);
         switch (direction) {
             case 'R':
-                for (let i = 0; i < dtsNum; i++) {
-                    x++;
-                    digLocations.push({pos: {x, y}, color});
-                }
+                x += dtsNum;
                 break;
             case 'L':
-                for (let i = 0; i < dtsNum; i++) {
-                    x--;
-                    digLocations.push({pos: {x, y}, color});
-                }
+                x -= dtsNum;
                 break;
             case 'D':
-                for (let i = 0; i < dtsNum; i++) {
-                    y++;
-                    digLocations.push({pos: {x, y}, color});
-                }
+                y += dtsNum;
                 break;
             case 'U':
-                for (let i = 0; i < dtsNum; i++) {
-                    y--;
-                    digLocations.push({pos: {x, y}, color});
-                }
+                y -= dtsNum;
                 break;
         }
 
@@ -112,39 +146,23 @@ export default async function () {
         } else if (y < yMin) {
             yMin = y;
         }
+
+        digVertices.push({x, y});
     }
 
-    console.log('digLocations', digLocations);
+    console.log('digVertices', digVertices);
     console.log('xMax', xMax, 'yMax', yMax, 'xMin', xMin, 'yMin', yMin);
 
-    // step 2: flood fill area & count area
-    const startFlood = {x: 1, y: 1}; // assume area in pos (1,1);
-    const floodLocations: Position[] = [startFlood];
-    const floodQueue: Position[] = [startFlood];
+    // step 2: find area with The Shoelace Formula
+    // ref: https://www.theoremoftheday.org/GeometryAndTrigonometry/Shoelace/TotDShoelace.pdf
+    const innerArea = findPolygonArea(digVertices);
+    const perimeterLen = findPerimeterLen(digVertices);
+    const outerArea = perimeterLen / 2 + 1;
+    const total = innerArea + outerArea;
+    console.log('inner area', innerArea);
+    console.log('perimeterLen', perimeterLen);
+    console.log('oouterArea', outerArea);
+    console.log('total', total);
 
-    while (floodQueue.length > 0) {
-        const flood = floodQueue.shift() as Position;
-        let nextFloods = getNeighbors(
-            xMin,
-            xMax,
-            yMin,
-            yMax,
-            flood,
-            digLocations,
-        );
-        nextFloods = nextFloods.filter(v => {
-            const found = floodLocations.find(f => f.x === v.x && f.y === v.y);
-            return found === undefined;
-        });
-        floodQueue.push(...nextFloods);
-        floodLocations.push(...nextFloods);
-    }
-
-    renderDigMap(digLocations, floodLocations, xMin, xMax, yMin, yMax);
-
-    const totalCubicMeters = floodLocations.length + digLocations.length;
-
-    console.log('floodLocations.length', floodLocations.length);
-    console.log('digLocations.length', digLocations.length);
-    console.log('totalCubicMeters', totalCubicMeters);
+    // renderDigMap(digVertices, xMin, xMax, yMin, yMax);
 }
