@@ -106,7 +106,23 @@ function findPerimeterLen(points: Position[]) {
     return length;
 }
 
+function mapDirectionPart2(directionDigit: string): string {
+    switch (directionDigit) {
+        case '0':
+            return 'R';
+        case '1':
+            return 'D';
+        case '2':
+            return 'L';
+        case '3':
+            return 'U';
+    }
+    throw new Error('Unknown directionDigit: ' + directionDigit);
+}
+
 export default async function () {
+    const isPart1 = false;
+
     // step 1 : read input into array
     const digVertices: Position[] = [];
 
@@ -119,8 +135,16 @@ export default async function () {
     let y = 0;
     for await (const line of readLines('./src/day18/input.txt')) {
         const [direction, distance, color] = spiltWithSpace(line);
-        const dtsNum = Number(distance);
-        switch (direction) {
+
+        const dtsNum = isPart1
+            ? Number(distance)
+            : Number('0x' + color.slice(2, -2));
+
+        const directionSymbol = isPart1
+            ? direction
+            : mapDirectionPart2(color.slice(1, -1).slice(-1));
+
+        switch (directionSymbol) {
             case 'R':
                 x += dtsNum;
                 break;
@@ -161,7 +185,7 @@ export default async function () {
     const total = innerArea + outerArea;
     console.log('inner area', innerArea);
     console.log('perimeterLen', perimeterLen);
-    console.log('oouterArea', outerArea);
+    console.log('outerArea', outerArea);
     console.log('total', total);
 
     // renderDigMap(digVertices, xMin, xMax, yMin, yMax);
