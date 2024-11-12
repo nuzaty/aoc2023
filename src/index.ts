@@ -19,4 +19,4 @@
 // import day17 from './day17/day17';
 import day18 from './day18/day18';
 
-day18();
+void day18();
