@@ -1,10 +1,4 @@
-import {
-    Colors,
-    getColorText,
-    readLines,
-    spiltWith,
-    spiltWithSpace,
-} from '../utils';
+import {readLines, spiltWith} from '../utils';
 
 // naming from https://adventofcode.com/2023/day/19
 export type PartRating = {
@@ -133,80 +127,109 @@ function processWorkflowLastRule(
     }
 }
 
-export default async function () {
-    // step 1: read input
-    const [workflows, partRatings] = await readInput();
-    console.log(workflows);
+function isPartAccepted(
+    part: PartRating,
+    workflows: Map<string, Workflow>,
+): boolean {
+    let currWorkflow = workflows.get('in') as Workflow;
+    let isAccepted: boolean | undefined;
+    let isProcess = true;
 
-    // step 2: find accept part by workflows & part ratings
-    let sumRating = 0;
-    for (const part of partRatings) {
-        let currWorkflow = workflows.get('in') as Workflow;
-        let isAccept: boolean | undefined;
-        let isProcess = true;
+    // do unitl accept or rejected
+    while (isProcess) {
+        let nextWorkFlow: Workflow | undefined;
+        let matchCondRule = false;
 
-        // do unitl accept or rejected
-        while (isProcess) {
-            let nextWorkFlow: Workflow | undefined;
-            let matchCondRule = false;
+        // step 2.1 : check rules //
 
-            // step 2.1 : check rules //
-
-            for (const condRule of currWorkflow.condRules) {
-                const nextWorkFlowName = processWorkflowRule(part, condRule);
-                if (nextWorkFlowName) {
-                    // case: Accepted
-                    if (nextWorkFlowName === 'A') {
-                        isAccept = true;
-                    }
-                    // case: Rejected
-                    else if (nextWorkFlowName === 'R') {
-                        isAccept = false;
-                    }
-                    // case: go to next workflow
-                    else {
-                        nextWorkFlow = workflows.get(nextWorkFlowName);
-                    }
-                    matchCondRule = true;
-                    break;
+        for (const condRule of currWorkflow.condRules) {
+            const nextWorkFlowName = processWorkflowRule(part, condRule);
+            if (nextWorkFlowName) {
+                // case: Accepted
+                if (nextWorkFlowName === 'A') {
+                    isAccepted = true;
                 }
-                // else {
-                //     // Go to next rule if not match any condition
-                // }
-            }
-
-            // if not match any condition rule go to last rule (last destination)
-            if (!matchCondRule) {
-                const [lastIsAccept, lastNextWorkFlow] =
-                    processWorkflowLastRule(currWorkflow, workflows);
-                isAccept = lastIsAccept;
-                nextWorkFlow = lastNextWorkFlow;
-            }
-
-            // step 2.2 check if Accepted or Rejected and calculate sum of rating. otherwise go to next workflow. //
-
-            // case go to next work flow
-            if (nextWorkFlow) {
-                currWorkflow = nextWorkFlow;
-            }
-            // case: Accepted or Rejected
-            else {
-                if (isAccept === true) {
-                    sumRating += part.x;
-                    sumRating += part.m;
-                    sumRating += part.a;
-                    sumRating += part.s;
-                    isProcess = false;
-                } else if (isAccept === false) {
-                    // don't add rating if the part is rejected
-                    isProcess = false;
-                } else {
-                    throw new Error(
-                        'Part is not accepted or rejected and nextWorkFlow is not found!',
-                    );
+                // case: Rejected
+                else if (nextWorkFlowName === 'R') {
+                    isAccepted = false;
                 }
+                // case: go to next workflow
+                else {
+                    nextWorkFlow = workflows.get(nextWorkFlowName);
+                }
+                matchCondRule = true;
+                break;
+            }
+            // else {
+            //     // Go to next rule if not match any condition
+            // }
+        }
+
+        // if not match any condition rule go to last rule (last destination)
+        if (!matchCondRule) {
+            const [lastIsAccept, lastNextWorkFlow] = processWorkflowLastRule(
+                currWorkflow,
+                workflows,
+            );
+            isAccepted = lastIsAccept;
+            nextWorkFlow = lastNextWorkFlow;
+        }
+
+        // step 2.2 check if Accepted or Rejected and calculate sum of rating. otherwise go to next workflow. //
+
+        // case go to next work flow
+        if (nextWorkFlow) {
+            currWorkflow = nextWorkFlow;
+        }
+        // case: Accepted or Rejected
+        else {
+            if (isAccepted === true || isAccepted === false) {
+                isProcess = false;
+            } else {
+                throw new Error(
+                    'Part is not accepted or rejected and nextWorkFlow is not found!',
+                );
             }
         }
-        console.log('new sumRating', sumRating);
+    }
+    return isAccepted as boolean;
+}
+
+export default async function () {
+    const isPart1 = false;
+
+    // step 1: read input
+    const [workflows, partRatings] = await readInput();
+
+    if (isPart1) {
+        // step 2 (PART 1): find accept part by workflows & part ratings
+        let sumRating = 0;
+        for (const part of partRatings) {
+            const isAccepted = isPartAccepted(part, workflows);
+            if (isAccepted) {
+                sumRating += part.x;
+                sumRating += part.m;
+                sumRating += part.a;
+                sumRating += part.s;
+            }
+        }
+        console.log('sumRating', sumRating);
+    } else {
+        // step 2 (PART 2): find possible combinations of ratings will be accepted
+        let totalAccepted = 0;
+        for (let x = 1; x <= 4000; x++) {
+            for (let m = 1; m <= 4000; m++) {
+                for (let a = 1; a <= 4000; a++) {
+                    for (let s = 1; s <= 4000; s++) {
+                        if (isPartAccepted({x, m, a, s}, workflows)) {
+                            totalAccepted++;
+                        }
+                    }
+                }
+                console.log('x,m processed:', x, m);
+            }
+        }
+
+        console.log('totalAccepted', totalAccepted);
     }
 }
