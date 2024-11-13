@@ -140,11 +140,11 @@ export default async function () {
             ? Number(distance)
             : Number('0x' + color.slice(2, -2));
 
-        const directionSymbol = isPart1
-            ? direction
-            : mapDirectionPart2(color.slice(1, -1).slice(-1));
-
-        switch (directionSymbol) {
+        switch (
+            isPart1
+                ? direction
+                : mapDirectionPart2(color.slice(1, -1).slice(-1))
+        ) {
             case 'R':
                 x += dtsNum;
                 break;
