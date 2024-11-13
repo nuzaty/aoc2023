@@ -17,6 +17,7 @@
 // import day15 from './day15/day15';
 // import day16 from './day16/day16';
 // import day17 from './day17/day17';
-import day18 from './day18/day18';
+// import day18 from './day18/day18';
+import day19 from './day19/day19';
 
-void day18();
+void day19();
