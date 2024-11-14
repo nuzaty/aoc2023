@@ -21,6 +21,19 @@ export type Rule = {
     dest: string; // next workflow or Accept (A) or Reject (R)
 };
 
+export type Range = {
+    min: number;
+    max: number;
+};
+
+export type RatingRange = {
+    xRange: Range;
+    mRange: Range;
+    aRange: Range;
+    sRange: Range;
+    workflowName: string;
+};
+
 export function extractWorkflow(workflow: string): Workflow {
     const pattern = /(.+){(.*)}/;
     const matches = workflow.match(pattern) as string[];
@@ -195,6 +208,165 @@ function isPartAccepted(
     return isAccepted as boolean;
 }
 
+export function processRatingRange(
+    ratingRange: RatingRange,
+    workflow: Workflow,
+): RatingRange[] {
+    const {condRules} = workflow;
+    const newRanges: RatingRange[] = [];
+    let currRatingRange: RatingRange | undefined = ratingRange;
+    for (const condRule of condRules) {
+        if (currRatingRange) {
+            const [ratingRangeToDest, ratingRangeRemain] = splitRatingRange(
+                currRatingRange,
+                condRule,
+            );
+            if (ratingRangeToDest) newRanges.push(ratingRangeToDest);
+            currRatingRange = ratingRangeRemain;
+        }
+    }
+    // add last remaining range to last dest
+    if (currRatingRange) {
+        currRatingRange.workflowName = workflow.lastDest;
+        newRanges.push(currRatingRange);
+    }
+
+    return newRanges;
+}
+
+// [ratingRangeToDest, ratingRangeRemain]
+export function splitRatingRange(
+    ratingRange: RatingRange,
+    rule: Rule,
+): (RatingRange | undefined)[] {
+    const {ratingType, operator, count, dest} = rule;
+    const {xRange, mRange, aRange, sRange} = ratingRange;
+
+    switch (ratingType) {
+        case 'x': {
+            const [xRangeToDest, xRangeRemain] = splitRangeWithCondNum(
+                xRange,
+                operator,
+                count,
+            );
+            return [
+                xRangeToDest
+                    ? {
+                          ...ratingRange,
+                          xRange: xRangeToDest,
+                          workflowName: dest,
+                      }
+                    : undefined,
+                xRangeRemain
+                    ? {
+                          ...ratingRange,
+                          xRange: xRangeRemain,
+                      }
+                    : undefined,
+            ];
+        }
+        case 'm': {
+            const [mRangeToDest, mRangeRemain] = splitRangeWithCondNum(
+                mRange,
+                operator,
+                count,
+            );
+            return [
+                mRangeToDest
+                    ? {
+                          ...ratingRange,
+                          mRange: mRangeToDest,
+                          workflowName: dest,
+                      }
+                    : undefined,
+                mRangeRemain
+                    ? {
+                          ...ratingRange,
+                          mRange: mRangeRemain,
+                      }
+                    : undefined,
+            ];
+        }
+        case 'a': {
+            const [aRangeToDest, aRangeRemain] = splitRangeWithCondNum(
+                aRange,
+                operator,
+                count,
+            );
+            return [
+                aRangeToDest
+                    ? {
+                          ...ratingRange,
+                          aRange: aRangeToDest,
+                          workflowName: dest,
+                      }
+                    : undefined,
+                aRangeRemain
+                    ? {
+                          ...ratingRange,
+                          aRange: aRangeRemain,
+                      }
+                    : undefined,
+            ];
+        }
+        case 's': {
+            const [sRangeToDest, sRangeRemain] = splitRangeWithCondNum(
+                sRange,
+                operator,
+                count,
+            );
+            return [
+                sRangeToDest
+                    ? {
+                          ...ratingRange,
+                          sRange: sRangeToDest,
+                          workflowName: dest,
+                      }
+                    : undefined,
+                sRangeRemain
+                    ? {
+                          ...ratingRange,
+                          sRange: sRangeRemain,
+                      }
+                    : undefined,
+            ];
+        }
+        default:
+            throw new Error('Unknown ratingType: ' + ratingType);
+    }
+}
+
+// return [rangeToDest, rangeRemain]
+export function splitRangeWithCondNum(
+    {min, max}: Range,
+    operator: string,
+    condNum: number,
+): (Range | undefined)[] {
+    if (operator === '>') {
+        if (min > condNum) {
+            return [{min, max}, undefined];
+        } else if (max <= condNum) {
+            return [undefined, {min, max}];
+        } else {
+            return [
+                {min: condNum + 1, max},
+                {min, max: condNum},
+            ];
+        }
+    } else {
+        if (max < condNum) {
+            return [{min, max}, undefined];
+        } else if (min >= condNum) {
+            return [undefined, {min, max}];
+        } else {
+            return [
+                {min, max: condNum - 1},
+                {min: condNum, max},
+            ];
+        }
+    }
+}
+
 export default async function () {
     const isPart1 = false;
 
@@ -216,20 +388,44 @@ export default async function () {
         console.log('sumRating', sumRating);
     } else {
         // step 2 (PART 2): find possible combinations of ratings will be accepted
-        let totalAccepted = 0;
-        for (let x = 1; x <= 4000; x++) {
-            for (let m = 1; m <= 4000; m++) {
-                for (let a = 1; a <= 4000; a++) {
-                    for (let s = 1; s <= 4000; s++) {
-                        if (isPartAccepted({x, m, a, s}, workflows)) {
-                            totalAccepted++;
-                        }
-                    }
+        const startProcess: RatingRange = {
+            xRange: {min: 1, max: 4000},
+            mRange: {min: 1, max: 4000},
+            aRange: {min: 1, max: 4000},
+            sRange: {min: 1, max: 4000},
+            workflowName: 'in',
+        };
+        const processQueue: RatingRange[] = [startProcess];
+        const acceptedRanges: RatingRange[] = [];
+
+        while (processQueue.length > 0) {
+            const currRatingRange = processQueue.pop() as RatingRange;
+            const workflow = workflows.get(
+                currRatingRange.workflowName,
+            ) as Workflow;
+            const newRanges = processRatingRange(currRatingRange, workflow);
+
+            for (const range of newRanges) {
+                if (range.workflowName === 'A') {
+                    acceptedRanges.push(range);
+                } else if (range.workflowName === 'R') {
+                    // do nothing if range is rejected
+                } else {
+                    processQueue.push(range);
                 }
-                console.log('x,m processed:', x, m);
             }
         }
 
-        console.log('totalAccepted', totalAccepted);
+        // calculate all possible combination from all accepted ranges
+        let totalCombination = 0;
+        for (const {xRange, mRange, aRange, sRange} of acceptedRanges) {
+            const xCount = xRange.max - xRange.min + 1;
+            const mCount = mRange.max - mRange.min + 1;
+            const aCount = aRange.max - aRange.min + 1;
+            const sCount = sRange.max - sRange.min + 1;
+            totalCombination += xCount * mCount * aCount * sCount;
+        }
+
+        console.log('totalCombination', totalCombination);
     }
 }

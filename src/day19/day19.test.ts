@@ -4,6 +4,9 @@ import {
     Workflow,
     PartRating,
     processWorkflowRule,
+    processRatingRange,
+    RatingRange,
+    splitRatingRange,
 } from './day19';
 
 describe('extractWorkflow function', () => {
@@ -89,6 +92,110 @@ describe('processWorkflowRule function', () => {
             {ratingType: 'x', operator: '>', count: 787, dest: 'A'},
         );
         const expected = undefined;
+        expect(actual).toEqual(expected);
+    });
+});
+
+describe('processRatingRange function', () => {
+    it('should return a corrected rating range list with the given input', () => {
+        const actual: RatingRange[] = processRatingRange(
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 50},
+                sRange: {min: 1, max: 50},
+                workflowName: 'in',
+            },
+            {
+                name: 'in',
+                condRules: [
+                    {ratingType: 'a', operator: '<', count: 10, dest: 'np'},
+                    {ratingType: 'x', operator: '>', count: 20, dest: 'nq'},
+                ],
+                lastDest: 'nr',
+            },
+        );
+        const expected = [
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 9},
+                sRange: {min: 1, max: 50},
+                workflowName: 'np',
+            },
+            {
+                xRange: {min: 21, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 10, max: 50},
+                sRange: {min: 1, max: 50},
+                workflowName: 'nq',
+            },
+            {
+                xRange: {min: 1, max: 20},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 10, max: 50},
+                sRange: {min: 1, max: 50},
+                workflowName: 'nr',
+            },
+        ];
+        expect(actual).toEqual(expected);
+    });
+});
+
+describe('splitRatingRange function', () => {
+    it('should return a corrected rating range list with the given input 1', () => {
+        const actual: (RatingRange | undefined)[] = splitRatingRange(
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 50},
+                sRange: {min: 1, max: 50},
+                workflowName: 'in',
+            },
+            {ratingType: 'a', operator: '<', count: 10, dest: 'np'},
+        );
+        const expected = [
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 9},
+                sRange: {min: 1, max: 50},
+                workflowName: 'np',
+            },
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 10, max: 50},
+                sRange: {min: 1, max: 50},
+                workflowName: 'in',
+            },
+        ];
+        expect(actual).toEqual(expected);
+    });
+});
+
+describe('splitRatingRange function', () => {
+    it('should return a corrected rating range list with the given input 2', () => {
+        const actual: (RatingRange | undefined)[] = splitRatingRange(
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 9},
+                sRange: {min: 1, max: 50},
+                workflowName: 'np',
+            },
+            {ratingType: 'a', operator: '>', count: 20, dest: 'R'},
+        );
+        const expected = [
+            undefined,
+            {
+                xRange: {min: 1, max: 50},
+                mRange: {min: 1, max: 50},
+                aRange: {min: 1, max: 9},
+                sRange: {min: 1, max: 50},
+                workflowName: 'np',
+            },
+        ];
         expect(actual).toEqual(expected);
     });
 });
