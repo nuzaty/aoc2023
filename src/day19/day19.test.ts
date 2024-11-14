@@ -78,9 +78,6 @@ describe('processWorkflowRule function', () => {
         const expected = 'A';
         expect(actual).toEqual(expected);
     });
-});
-
-describe('processWorkflowRule function', () => {
     it('should return a corrected next workflow name with the given input 2', () => {
         const actual: string | undefined = processWorkflowRule(
             {
@@ -172,9 +169,7 @@ describe('splitRatingRange function', () => {
         ];
         expect(actual).toEqual(expected);
     });
-});
 
-describe('splitRatingRange function', () => {
     it('should return a corrected rating range list with the given input 2', () => {
         const actual: (RatingRange | undefined)[] = splitRatingRange(
             {
