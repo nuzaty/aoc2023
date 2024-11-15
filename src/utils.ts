@@ -43,6 +43,44 @@ export function waitKeyInput(text?: string) {
     );
 }
 
+export function findGcd(a: number, b: number): number {
+    let divider: number;
+    let remainder: number;
+
+    if (a > b) {
+        divider = b;
+        remainder = a % divider;
+    } else {
+        divider = a;
+        remainder = b % divider;
+    }
+
+    if (remainder === 0) return divider;
+
+    return findGcd(divider, remainder);
+}
+
+export function findLcm(a: number, b: number): number {
+    return (a / findGcd(a, b)) * b;
+}
+
+export function findLcmAll(nums: number[]): number {
+    if (nums.length === 0) {
+        throw new Error('nums is empty!');
+    }
+    if (nums.length === 1) {
+        return nums[0];
+    }
+
+    let lastLcm = nums[0];
+    for (let i = 1; i < nums.length; i++) {
+        const num = nums[i];
+        lastLcm = findLcm(lastLcm, num);
+    }
+
+    return lastLcm;
+}
+
 export enum Colors {
     Red,
     Blue,

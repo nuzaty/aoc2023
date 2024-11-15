@@ -1,22 +1,22 @@
-import {Colors, getColorText, readLines, spiltWith} from '../utils';
+import {Colors, findLcmAll, getColorText, readLines, spiltWith} from '../utils';
 import util from 'util';
 
-enum ModuleType {
+export enum ModuleType {
     Unknown,
     Button,
     Boardcaster,
     FilpFlop,
-    Conjuction,
+    Conjunction,
 }
 
-enum ModuleState {
+export enum ModuleState {
     On = 'on',
     Off = 'off',
     Low = 'low',
     High = 'high',
 }
 
-type Module = {
+export type Module = {
     name: string;
     type: ModuleType;
     inputs: string[];
@@ -24,15 +24,22 @@ type Module = {
     states?: ModuleState[];
 };
 
-enum SignalType {
+export enum SignalType {
     Low,
     High,
 }
 
-type Signal = {
+export type Signal = {
     type: SignalType;
     from: string;
     to: string;
+};
+
+type Part2AnswerModule = {
+    name: string;
+    sendHighCount: number;
+    prevPressCount: number;
+    pressCount: number;
 };
 
 async function readInput(): Promise<Map<string, Module>> {
@@ -61,9 +68,9 @@ async function readInput(): Promise<Map<string, Module>> {
         let type = ModuleType.Unknown;
 
         if (nameWithPrefix.startsWith('%')) type = ModuleType.FilpFlop;
-        else if (nameWithPrefix.startsWith('&')) type = ModuleType.Conjuction;
+        else if (nameWithPrefix.startsWith('&')) type = ModuleType.Conjunction;
 
-        if (type === ModuleType.FilpFlop || type === ModuleType.Conjuction) {
+        if (type === ModuleType.FilpFlop || type === ModuleType.Conjunction) {
             name = nameWithPrefix.slice(1);
             const existingModule = moduleMap.get(name);
             if (existingModule) {
@@ -122,7 +129,7 @@ async function readInput(): Promise<Map<string, Module>> {
     return moduleMap;
 }
 
-function pressButton(): Signal {
+export function pressButton(): Signal {
     return {type: SignalType.Low, from: 'button', to: 'broadcaster'};
 }
 
@@ -133,11 +140,11 @@ function processSignal(
     const toModule = moduleMap.get(currSignal.to) as Module;
     switch (toModule.type) {
         case ModuleType.Boardcaster:
-            return doBoardcast(currSignal, toModule);
+            return doBroadcast(currSignal, toModule);
         case ModuleType.FilpFlop:
             return doFilpFlop(currSignal, toModule);
-        case ModuleType.Conjuction:
-            return doConjuction(currSignal, toModule);
+        case ModuleType.Conjunction:
+            return doConjunction(currSignal, toModule);
         case ModuleType.Unknown:
             return [];
         default:
@@ -148,7 +155,7 @@ function processSignal(
     }
 }
 
-function doFilpFlop(signal: Signal, filpFlop: Module): Signal[] {
+export function doFilpFlop(signal: Signal, filpFlop: Module): Signal[] {
     if (signal.type === SignalType.High) return [];
     else {
         if (!filpFlop.states)
@@ -176,7 +183,7 @@ function doFilpFlop(signal: Signal, filpFlop: Module): Signal[] {
     }
 }
 
-function doConjuction(signal: Signal, conjuction: Module): Signal[] {
+export function doConjunction(signal: Signal, conjuction: Module): Signal[] {
     // update states
     if (!conjuction.states)
         throw new Error('invalid module state: ' + conjuction.states);
@@ -207,7 +214,7 @@ function doConjuction(signal: Signal, conjuction: Module): Signal[] {
     });
 }
 
-function doBoardcast(signal: Signal, broadcaster: Module): Signal[] {
+export function doBroadcast(signal: Signal, broadcaster: Module): Signal[] {
     return broadcaster.outputs.map(output => {
         return {
             from: broadcaster.name,
@@ -228,7 +235,7 @@ function logSignal({from, type, to}: Signal) {
 }
 
 export default async function () {
-    const isPart1 = true;
+    const isPart1 = false;
 
     // step 1 : read puzzle input
     const moduleMap = await readInput();
@@ -239,7 +246,7 @@ export default async function () {
 
     if (isPart1) {
         // step 2-1-1: simulate 1000 button pressed and count total signal
-        const totalButtonPressed = 4;
+        const totalButtonPressed = 1000;
         let sumLowCount = 0;
         let sumHighCount = 0;
         for (let i = 0; i < totalButtonPressed; i++) {
@@ -250,7 +257,7 @@ export default async function () {
             let highCount = 0;
             while (signalQueue.length > 0) {
                 currSignal = signalQueue.shift() as Signal;
-                logSignal(currSignal);
+                // logSignal(currSignal);
                 // count new signal
                 if (currSignal.type === SignalType.Low) lowCount++;
                 else highCount++;
@@ -261,7 +268,6 @@ export default async function () {
                 );
                 signalQueue.push(...newSignal);
             }
-            console.log();
 
             sumLowCount += lowCount;
             sumHighCount += highCount;
@@ -269,6 +275,93 @@ export default async function () {
         // step 2-1-2: multiply low and high signal count
         console.log('multiply result', sumLowCount * sumHighCount);
     } else {
-        // TODO
+        // PART 2
+        let totalButtonPressed = 0;
+
+        // gt, vr, nl, and lr need to send a high pulse so that rx can receive a low pulse
+        // for this input ONLY! (It come from drawing in the paper I draw on this input. :P)
+        const answerModules: Part2AnswerModule[] = [
+            {
+                name: 'gt',
+                sendHighCount: 0,
+                pressCount: 0,
+                prevPressCount: 0,
+            },
+            {
+                name: 'vr',
+                sendHighCount: 0,
+                pressCount: 0,
+                prevPressCount: 0,
+            },
+            {
+                name: 'nl',
+                sendHighCount: 0,
+                pressCount: 0,
+                prevPressCount: 0,
+            },
+            {
+                name: 'lr',
+                sendHighCount: 0,
+                pressCount: 0,
+                prevPressCount: 0,
+            },
+        ];
+
+        while (answerModules.some(v => v.sendHighCount !== 2)) {
+            signalQueue.push(pressButton());
+            totalButtonPressed++;
+
+            let currSignal: Signal;
+            while (signalQueue.length > 0) {
+                currSignal = signalQueue.shift() as Signal;
+
+                const newSignal: Signal[] = processSignal(
+                    currSignal,
+                    moduleMap,
+                );
+
+                // check the important module ToFindAnswer
+                for (const module of answerModules) {
+                    const foundSendHigh = newSignal.some(
+                        v =>
+                            v.from === module.name &&
+                            v.type === SignalType.High,
+                    );
+                    if (foundSendHigh) {
+                        module.sendHighCount++;
+                        module.prevPressCount = module.pressCount;
+                        module.pressCount = totalButtonPressed;
+                    }
+                }
+                signalQueue.push(...newSignal);
+            }
+        }
+
+        console.log('answerModules', answerModules);
+        // if the difference between the previous press count and the press count of the answer module
+        // is the same as the previous press count, then it send high signal in the cycle.
+        let isSignalSendInTheCycle = true;
+        for (const module of answerModules) {
+            if (
+                module.prevPressCount !==
+                module.pressCount - module.prevPressCount
+            ) {
+                isSignalSendInTheCycle = false;
+                break;
+            }
+        }
+        console.log('isSignalSendInTheCycle', isSignalSendInTheCycle);
+
+        // If it send high pulse in the cycle, then rx module should be recived low pulse when all answer moudules
+        // send all high pluse at the same time. So we need to find LCM of the answer module when
+        // it send the high pulse in the cycle
+        if (isSignalSendInTheCycle) {
+            const ansModuleLcm = findLcmAll(
+                answerModules.map(v => v.prevPressCount),
+            );
+            console.log('ansModuleLcm', ansModuleLcm);
+        } else {
+            throw new Error('I dont know how to solve this puzzle!');
+        }
     }
 }
