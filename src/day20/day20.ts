@@ -352,9 +352,9 @@ export default async function () {
         }
         console.log('isSignalSendInTheCycle', isSignalSendInTheCycle);
 
-        // If it send high pulse in the cycle, then rx module should be recived low pulse when all answer moudules
-        // send all high pluse at the same time. So we need to find LCM of the answer module when
-        // it send the high pulse in the cycle
+        // If it sends a high pulse during the cycle, the rx module should receive a low pulse
+        // when all answer modules send a high pulse simultaneously. Therefore, we need to find
+        // the LCM of the press count for each answer module when it sends a high pulse during the cycle.
         if (isSignalSendInTheCycle) {
             const ansModuleLcm = findLcmAll(
                 answerModules.map(v => v.prevPressCount),
