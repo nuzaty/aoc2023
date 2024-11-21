@@ -27,7 +27,7 @@ export default async function () {
         const plotReached = findReached(64, startPosition, tiles, false);
         console.log('total reached', plotReached.size);
     } else {
-        const maxStep = 100;
+        const maxStep = 26501365;
         const mapWidth = tiles[0].length;
         const halfMapWidth = (mapWidth - 1) / 2;
         const mapProp: MapProp = {
@@ -39,104 +39,61 @@ export default async function () {
             ),
             lastTileWidth: getLastTileWidth(maxStep, mapWidth, halfMapWidth),
         };
-        console.log('mapProp', mapProp);
 
-        const {mapRepeatOneDirection, lastTileWidth} = mapProp;
-        if (mapRepeatOneDirection < 2) {
+        // console.log('problem map prop', mapProp);
+        const stepsToAns = [
+            halfMapWidth + mapWidth * 1 + mapProp.lastTileWidth,
+            halfMapWidth + mapWidth * 2 + mapProp.lastTileWidth,
+            halfMapWidth + mapWidth * 3 + mapProp.lastTileWidth,
+            halfMapWidth + mapWidth * 4 + mapProp.lastTileWidth,
+        ];
+
+        const mapRepeats: number[] = []; // x
+        const allAns: number[] = []; // y
+
+        for (const step of stepsToAns) {
+            const newMapProp: MapProp = {
+                tiles,
+                mapWidth,
+                halfMapWidth, // only odd map width
+                mapRepeatOneDirection: Math.ceil(
+                    (step - halfMapWidth) / mapWidth,
+                ),
+                lastTileWidth: getLastTileWidth(step, mapWidth, halfMapWidth),
+            };
+            mapRepeats.push(newMapProp.mapRepeatOneDirection);
+
             // old fashion
             const reached = findReachedInfinite(
-                maxStep,
+                step,
                 startPosition,
-                mapProp,
+                newMapProp,
+                false,
             );
-            console.log('part 2 - step', maxStep, 'reached', reached);
-        } else {
-            if (lastTileWidth < halfMapWidth) {
-                throw new Error(
-                    'not support case last tile is less than half map width!',
-                );
-                // TODO handle this case in some days :P
-            }
-
-            // total Odd/Even Map
-            let totalEvenMap = 0;
-            let totalOddMap = 0;
-
-            if (maxStep % 2 === 1) {
-                if (mapRepeatOneDirection % 2 === 1) {
-                    totalOddMap = mapRepeatOneDirection * mapRepeatOneDirection;
-                    totalEvenMap =
-                        (mapRepeatOneDirection - 1) *
-                        (mapRepeatOneDirection - 1);
-                } else {
-                    totalOddMap =
-                        (mapRepeatOneDirection - 1) *
-                        (mapRepeatOneDirection - 1);
-                    totalEvenMap =
-                        mapRepeatOneDirection * mapRepeatOneDirection;
-                }
-            } else {
-                if (mapRepeatOneDirection % 2 === 1) {
-                    totalOddMap =
-                        (mapRepeatOneDirection - 1) *
-                        (mapRepeatOneDirection - 1);
-                    totalEvenMap =
-                        mapRepeatOneDirection * mapRepeatOneDirection;
-                } else {
-                    totalOddMap = mapRepeatOneDirection * mapRepeatOneDirection;
-                    totalEvenMap =
-                        (mapRepeatOneDirection - 1) *
-                        (mapRepeatOneDirection - 1);
-                }
-            }
-
-            // total A,B
-            const totalLargePartialMap = mapRepeatOneDirection - 1;
-            const totalSmallPartialMap = mapRepeatOneDirection;
-
-            console.log(
-                'totalOddMap',
-                totalOddMap,
-                'totalEvenMap',
-                totalEvenMap,
-                'totalLargePartialMap',
-                totalLargePartialMap,
-                'totalSmallPartialMap',
-                totalSmallPartialMap,
-            );
-
-            // old fashion
-            const oldFashionReached = findReachedInfinite(
-                maxStep,
-                startPosition,
-                mapProp,
-                true,
-            );
-
-            // Find O
-            const oddReached = findOddMapReached(startPosition, mapProp);
-            // Find E
-            const evenReached = findEvenMapReached(startPosition, mapProp);
-            // Find A, B
-            const {smallArea: smallAreaReached, largeArea: largeAreaReached} =
-                findPartialMapReached(mapProp);
-
-            // Find C
-            const connerReached = findConnerPartialMapReached(mapProp);
-
-            const totalReachedExcludedC =
-                oddReached * totalOddMap +
-                evenReached * totalEvenMap +
-                smallAreaReached * totalSmallPartialMap +
-                largeAreaReached * totalLargePartialMap;
-
-            console.log(
-                'part 2 - step',
-                maxStep,
-                'totalReachedExcludedC',
-                totalReachedExcludedC,
-            );
+            allAns.push(reached);
         }
+
+        const data: DataPoint[] = [];
+        for (let i = 0; i < mapRepeats.length; i++) {
+            const mapRepeat = mapRepeats[i];
+            const ans = allAns[i];
+            data.push({x: mapRepeat, y: ans});
+        }
+        console.log('data to fit', data);
+
+        const result = quadraticRegression(data);
+        console.log(
+            `Quadratic regression coefficients: a=${result.a}, b=${result.b}, c=${result.c}`,
+        );
+
+        const problemX = mapProp.mapRepeatOneDirection;
+        const {a, b, c} = result;
+        const reached =
+            Math.round(a) * problemX * problemX +
+            Math.round(b) * problemX +
+            Math.round(c);
+
+        console.log('part 2 reached', reached);
     }
 }
 
@@ -236,8 +193,8 @@ function findReached(
     return plotReached;
 }
 
+const tiles: string[][] = [];
 async function readPuzzleInput(): Promise<[string[][], Position]> {
-    const tiles: string[][] = [];
     let startPosition: Position = [-1, -1];
     let rowIndex = 0;
     for await (const line of readLines('./src/day21/input.txt')) {
@@ -588,10 +545,90 @@ function findConnerPartialMapReached(mapProp: MapProp): number {
     return c1 + c2 + c3 + c4;
 }
 
-function mapRepeatOneDirection(
-    step: number,
-    halfMapWidth: number,
-    mapWidth: number,
-): number {
-    return Math.ceil((step - halfMapWidth) / mapWidth);
+type DataPoint = {x: number; y: number};
+
+function quadraticRegression(data: DataPoint[]): {
+    a: number;
+    b: number;
+    c: number;
+} {
+    if (data.length < 3) {
+        throw new Error(
+            'At least three data points are required for quadratic regression.',
+        );
+    }
+
+    let sumX = 0,
+        sumY = 0;
+    let sumXX = 0,
+        sumXY = 0;
+    let sumXXX = 0,
+        sumXXXX = 0;
+    let sumXYY = 0;
+
+    for (const point of data) {
+        const x = point.x;
+        const y = point.y;
+        sumX += x;
+        sumY += y;
+        sumXX += x * x;
+        sumXY += x * y;
+        sumXXX += x * x * x;
+        sumXXXX += x * x * x * x;
+        sumXYY += x * x * y;
+    }
+
+    const n = data.length;
+
+    // Create the matrix and vector for solving the system of equations
+    const A = [
+        [sumXXXX, sumXXX, sumXX],
+        [sumXXX, sumXX, sumX],
+        [sumXX, sumX, n],
+    ];
+
+    const B = [sumXYY, sumXY, sumY];
+
+    // Solve the system of linear equations using Gaussian elimination
+    const coefficients = solveLinearSystem(A, B);
+
+    return {
+        a: coefficients[0],
+        b: coefficients[1],
+        c: coefficients[2],
+    };
+}
+
+function solveLinearSystem(A: number[][], B: number[]): number[] {
+    const n = A.length;
+
+    // Augment matrix A with vector B
+    for (let i = 0; i < n; i++) {
+        A[i].push(B[i]);
+    }
+
+    // Forward elimination
+    for (let i = 0; i < n; i++) {
+        if (A[i][i] === 0) {
+            throw new Error('Matrix is singular or nearly singular.');
+        }
+        for (let j = i + 1; j < n; j++) {
+            const factor = A[j][i] / A[i][i];
+            for (let k = i; k <= n; k++) {
+                A[j][k] -= factor * A[i][k];
+            }
+        }
+    }
+
+    // Back substitution
+    const x: number[] = new Array(n);
+    for (let i = n - 1; i >= 0; i--) {
+        let sum = 0;
+        for (let j = i + 1; j < n; j++) {
+            sum += A[i][j] * x[j];
+        }
+        x[i] = (A[i][n] - sum) / A[i][i];
+    }
+
+    return x;
 }
