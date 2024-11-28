@@ -87,6 +87,8 @@ export enum Colors {
     Yellow,
     Green,
     Magenta,
+    Cyan,
+    White,
 }
 
 export function colorToConsoleCode(color: Colors): string[] {
@@ -102,6 +104,10 @@ export function colorToConsoleCode(color: Colors): string[] {
         codes = [92, 39];
     } else if (color === Colors.Magenta) {
         codes = [95, 39];
+    } else if (color === Colors.Cyan) {
+        codes = [96, 39];
+    } else if (color === Colors.White) {
+        codes = [97, 39];
     } else {
         throw new Error('Unknown color: ' + color);
     }
