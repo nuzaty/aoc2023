@@ -1,5 +1,4 @@
-import {Colors, getColorText, readLines, spiltWith} from '../utils';
-import util from 'util';
+import {Colors, readLines, spiltWith} from '../utils';
 
 export type Point2D = {
     x: number;
