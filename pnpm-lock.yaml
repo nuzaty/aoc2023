@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      z3-solver:
+        specifier: ^4.13.3
+        version: 4.13.3
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14
@@ -500,6 +504,9 @@ packages:
   arrify@1.0.1:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
+
+  async-mutex@0.3.2:
+    resolution: {integrity: sha512-HuTK7E7MT7jZEh1P9GtRW9+aTWiDWWi9InbZ5hjxrnRa39KS4BW04+xLBhYNS2aXhHUIKZSw3gj4Pn1pj+qGAA==}
 
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
@@ -1824,6 +1831,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  z3-solver@4.13.3:
+    resolution: {integrity: sha512-890HgEb0Tr+J3vtYW/PWkxsptCUfYSJQtpfWDt8Sd9KVmjI5woZJd9d6lvuWi4wB1CWzzCfJ7SqQjxMawBazZQ==}
+    engines: {node: '>=16'}
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -2451,6 +2462,10 @@ snapshots:
   array-union@2.1.0: {}
 
   arrify@1.0.1: {}
+
+  async-mutex@0.3.2:
+    dependencies:
+      tslib: 2.8.1
 
   async@3.2.6: {}
 
@@ -3923,3 +3938,7 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
+
+  z3-solver@4.13.3:
+    dependencies:
+      async-mutex: 0.3.2

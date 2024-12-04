@@ -1,4 +1,5 @@
 import {readLines, spiltWith} from '../utils';
+import {init} from 'z3-solver';
 
 type Stone = {
     id: number;
@@ -19,10 +20,43 @@ type Intersection = {
 };
 
 export default async function () {
-    // step 1 : read input
+    const isPart1 = false;
+    //  read input
     const stones = await readPuzzleInput();
 
-    // step 2 : find all the future intersections with each stone
+    if (isPart1) doPart1(stones);
+    else await doPart2(stones);
+
+    // force quit the process because z-solver is not terminating properly.
+    // eslint-disable-next-line n/no-process-exit
+    process.exit(0);
+}
+async function readPuzzleInput(): Promise<Stone[]> {
+    const stones: Stone[] = [];
+    let id = 0;
+    for await (const line of readLines('./src/day24/input.txt')) {
+        const token = spiltWith('@', line);
+        const position = spiltWith(',', token[0]);
+        const velocity = spiltWith(',', token[1]);
+
+        stones.push({
+            id,
+            x: parseInt(position[0]),
+            y: parseInt(position[1]),
+            z: parseInt(position[2]),
+            vx: parseInt(velocity[0]),
+            vy: parseInt(velocity[1]),
+            vz: parseInt(velocity[2]),
+        });
+        id++;
+    }
+
+    return stones;
+}
+
+function doPart1(stones: Stone[]) {
+    // PART1: find all the future intersections with each stone
+
     const testAreaRange = [200000000000000, 400000000000000];
     const intersections: Intersection[] = [];
 
@@ -76,25 +110,59 @@ export default async function () {
     console.log(intersections, intersections.length);
 }
 
-async function readPuzzleInput(): Promise<Stone[]> {
-    const stones: Stone[] = [];
-    let id = 0;
-    for await (const line of readLines('./src/day24/input.txt')) {
-        const token = spiltWith('@', line);
-        const position = spiltWith(',', token[0]);
-        const velocity = spiltWith(',', token[1]);
+async function doPart2(stones: Stone[]) {
+    const {Context} = await init();
+    const {Solver, Int} = Context('main');
 
-        stones.push({
-            id,
-            x: parseInt(position[0]),
-            y: parseInt(position[1]),
-            z: parseInt(position[2]),
-            vx: parseInt(velocity[0]),
-            vy: parseInt(velocity[1]),
-            vz: parseInt(velocity[2]),
-        });
-        id++;
+    const solver = new Solver();
+    const x = Int.const('x');
+    const y = Int.const('y');
+    const z = Int.const('z');
+    const vx = Int.const('vx');
+    const vy = Int.const('vy');
+    const vz = Int.const('vz');
+
+    let tSuffix = 1;
+    for (const stone of stones) {
+        const currT = Int.const('t' + tSuffix);
+        solver.add(
+            x.add(vx.mul(currT)).eq(currT.mul(stone.vx).add(stone.x)),
+            y.add(vy.mul(currT)).eq(currT.mul(stone.vy).add(stone.y)),
+            z.add(vz.mul(currT)).eq(currT.mul(stone.vz).add(stone.z)),
+        );
+        tSuffix++;
     }
 
-    return stones;
+    const result = await solver.check();
+
+    if (result === 'sat') {
+        const model = solver.model();
+        const resultModel = {
+            x: model.get(x).toString(),
+            y: model.get(y).toString(),
+            z: model.get(z).toString(),
+            vx: model.get(vx).toString(),
+            vy: model.get(vy).toString(),
+            vz: model.get(vz).toString(),
+            t: new Map<string, string>(),
+        };
+
+        for (let i = 1; i <= stones.length; i++) {
+            const tName = 't' + i;
+            const currT = Int.const(tName);
+            resultModel.t.set(tName, model.get(currT).toString());
+            tSuffix++;
+        }
+
+        console.log('resultModel', resultModel);
+        console.log(
+            'sum of x,y,z',
+            Number(resultModel.x) +
+                Number(resultModel.y) +
+                Number(resultModel.z),
+        );
+
+        return;
+    }
+    throw new Error('cant solve part 2');
 }
