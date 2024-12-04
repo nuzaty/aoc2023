@@ -22,6 +22,7 @@
 // import day20 from './day20/day20';
 // import day21 from './day21/day21';
 // import day22 from './day22/day22';
-import day23 from './day23/day23';
+// import day23 from './day23/day23';
+import day24 from './day24/day24';
 
-void day23();
+void day24();
