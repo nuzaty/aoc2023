@@ -1,10 +1,8 @@
-
-import { readLines } from "../utils";
-
+import {readLines} from '../utils';
 
 type CycleData = {
-    cycle: number[]
-}
+    cycle: number[];
+};
 
 function renderTiles(tiles: string[][]) {
     for (const row of tiles) {
@@ -118,14 +116,18 @@ function tiltEast(tiles: string[][]) {
     }
 }
 
-function findRepeatPattern(arr: number[], minPatternLength: number = 1): CycleData {
-    const cycleData: CycleData = { cycle: [] };
-    for (let patternLength = minPatternLength; patternLength <= Math.floor(arr.length / 2); patternLength++) {
+function findRepeatPattern(arr: number[], minPatternLength = 1): CycleData {
+    const cycleData: CycleData = {cycle: []};
+    for (
+        let patternLength = minPatternLength;
+        patternLength <= Math.floor(arr.length / 2);
+        patternLength++
+    ) {
         const potentialPattern = arr.slice(-patternLength);
         // console.log(potentialPattern);
         let validPattern = true;
         for (let i = 0; i < potentialPattern.length; i++) {
-            const indexToCompare = arr.length - (potentialPattern.length * 2) + i;
+            const indexToCompare = arr.length - potentialPattern.length * 2 + i;
             // console.log('compare', arr[indexToCompare], potentialPattern[i]);
             if (indexToCompare < 0) {
                 // console.log('compare failed no len!');
@@ -148,11 +150,9 @@ function findRepeatPattern(arr: number[], minPatternLength: number = 1): CycleDa
     return cycleData;
 }
 
-export default async function () {
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1 : read input into array
-    const tiles: string[][] = [];  // access arr with [row][col]
+    const tiles: string[][] = []; // access arr with [row][col]
     for await (const line of readLines('./src/day14/input.txt')) {
         const row: string[] = [];
         for (const colChar of line) {
@@ -160,11 +160,6 @@ export default async function () {
         }
         tiles.push(row);
     }
-
-    // console.log('before tilted:');
-    // console.log('');
-    // renderTiles(tiles);
-    // console.log('');
 
     // step 2 : tilted the platform
     if (isPart1) {
@@ -177,13 +172,15 @@ export default async function () {
         console.log('');
 
         // step 3 : find the total load caused by all of the rounded rocks
-        console.log('totalLoad', findTotalLoad(tiles));
+        const totalLoad = findTotalLoad(tiles);
+        console.log('totalLoad', totalLoad);
+        return totalLoad;
     } else {
         // PART 2
         const cycleCount = 1000000000;
         const cycleCheckRepeat = 100;
 
-        let platformLoads: number[] = [];
+        const platformLoads: number[] = [];
         for (let i = 1; i <= cycleCount; i++) {
             tiltNorth(tiles);
             tiltWest(tiles);
@@ -193,16 +190,22 @@ export default async function () {
             platformLoads.push(findTotalLoad(tiles));
 
             if (i % cycleCheckRepeat === 0) {
-                const { cycle: pattern } = findRepeatPattern(platformLoads, 10);
+                const {cycle: pattern} = findRepeatPattern(platformLoads, 10);
                 if (pattern.length > 0) {
                     const remainingCycle = cycleCount - platformLoads.length;
                     const patternIndex = (remainingCycle % pattern.length) - 1;
-                    console.log('pattern', pattern, platformLoads.length, 'platformLoads.length');
+                    console.log(
+                        'pattern',
+                        pattern,
+                        platformLoads.length,
+                        'platformLoads.length',
+                    );
                     console.log('totalLoad part 2', pattern[patternIndex]);
-                    break;
+                    return pattern[patternIndex];
                 }
             }
         }
     }
-}
 
+    return 0;
+}

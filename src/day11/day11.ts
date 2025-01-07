@@ -1,4 +1,4 @@
-import { readLines } from "../utils";
+import {readLines} from '../utils';
 
 const renderTiles = (tiles: string[][]) => {
     for (const row of tiles) {
@@ -7,14 +7,11 @@ const renderTiles = (tiles: string[][]) => {
         }
         process.stdout.write('\n');
     }
-}
-export async function day11() {
-
-    const isPart1 = false;
-
-    let rowIndex: number = 0;
-    let colIndex: number = 0;
-    let tiles: string[][] = [];
+};
+export default async function (isPart1: boolean): Promise<number> {
+    let rowIndex = 0;
+    let colIndex = 0;
+    const tiles: string[][] = [];
 
     // step 1 : read puzzle input
     for await (const line of readLines('./src/day11/input.txt')) {
@@ -36,7 +33,7 @@ export async function day11() {
     const emptyRowIndices: number[] = [];
     for (const row of tiles) {
         colIndex = 0;
-        let rowIsEmpty: boolean = true;
+        let rowIsEmpty = true;
         for (const colChar of row) {
             if (colChar === '#') {
                 rowIsEmpty = false;
@@ -44,8 +41,7 @@ export async function day11() {
             }
             colIndex++;
         }
-        if (rowIsEmpty)
-            emptyRowIndices.push(rowIndex);
+        if (rowIsEmpty) emptyRowIndices.push(rowIndex);
 
         rowIndex++;
     }
@@ -55,7 +51,7 @@ export async function day11() {
     const emptyColIndices: number[] = [];
     const totalCol = tiles[0].length; // tiles[0] because every row has same column count!
     for (let colIndex = 0; colIndex < totalCol; colIndex++) {
-        let colIsEmpty: boolean = true;
+        let colIsEmpty = true;
         for (let rowIndex = 0; rowIndex < tiles.length; rowIndex++) {
             const rowChar = tiles[rowIndex][colIndex];
             if (rowChar === '#') {
@@ -63,26 +59,29 @@ export async function day11() {
                 break;
             }
         }
-        if (colIsEmpty)
-            emptyColIndices.push(colIndex);
+        if (colIsEmpty) emptyColIndices.push(colIndex);
     }
     console.log('emptyColIndices', emptyColIndices);
 
     // step 4 : expand empty row (cosmic expansion: row)
-    let rowExpandType = 'A'; // virtual expand replacement symbol
+    const rowExpandType = 'A'; // virtual expand replacement symbol
 
     for (const emptyRowIndex of emptyRowIndices) {
         tiles.splice(emptyRowIndex, 1, Array(totalCol).fill(rowExpandType));
     }
 
     // step 5 : expand empty column (cosmic expansion: column)
-    let colExpandType = 'B'; // virtual expand replacement symbol
-    let stackExpandType = 'C'; // symbol in case expand both (row & column)
+    const colExpandType = 'B'; // virtual expand replacement symbol
+    const stackExpandType = 'C'; // symbol in case expand both (row & column)
 
     for (const emptyColIndex of emptyColIndices) {
         for (const row of tiles) {
             const char = row[emptyColIndex];
-            row.splice(emptyColIndex, 1, char === rowExpandType ? stackExpandType : colExpandType);
+            row.splice(
+                emptyColIndex,
+                1,
+                char === rowExpandType ? stackExpandType : colExpandType,
+            );
         }
     }
 
@@ -91,7 +90,7 @@ export async function day11() {
 
     // step 6 : assign galaxy number & save galaxy location
     let galaxyNum = 1;
-    let galaxyLocations = new Map<number, number[]>();
+    const galaxyLocations = new Map<number, number[]>();
     rowIndex = 0;
     let rowPositionOffset = 0;
     for (const row of tiles) {
@@ -101,7 +100,10 @@ export async function day11() {
         for (const colChar of row) {
             if (colChar === '#') {
                 tiles[rowIndex][colIndex] = galaxyNum.toString();
-                galaxyLocations.set(galaxyNum, [rowIndex + rowPositionOffset, colIndex + colPositionOffset]);
+                galaxyLocations.set(galaxyNum, [
+                    rowIndex + rowPositionOffset,
+                    colIndex + colPositionOffset,
+                ]);
                 galaxyNum++;
             } else {
                 if (colChar === 'A') {
@@ -109,10 +111,8 @@ export async function day11() {
                     break;
                 }
                 if (colChar === 'B') {
-                    if (isPart1)
-                        colPositionOffset += 1;
-                    else
-                        colPositionOffset += 999999;
+                    if (isPart1) colPositionOffset += 1;
+                    else colPositionOffset += 999999;
                 }
             }
             colIndex++;
@@ -135,8 +135,16 @@ export async function day11() {
     const galaxyPairs: number[][] = [];
     const totalGalaxies = galaxyNum - 1;
 
-    for (let firstGalaxyNum = 1; firstGalaxyNum <= totalGalaxies - 1; firstGalaxyNum++) {
-        for (let secondGalaxyNum = firstGalaxyNum + 1; secondGalaxyNum <= totalGalaxies; secondGalaxyNum++) {
+    for (
+        let firstGalaxyNum = 1;
+        firstGalaxyNum <= totalGalaxies - 1;
+        firstGalaxyNum++
+    ) {
+        for (
+            let secondGalaxyNum = firstGalaxyNum + 1;
+            secondGalaxyNum <= totalGalaxies;
+            secondGalaxyNum++
+        ) {
             galaxyPairs.push([firstGalaxyNum, secondGalaxyNum]);
         }
     }
@@ -147,11 +155,16 @@ export async function day11() {
     const galaxyPairLengths = new Map<string, number>();
     let sumOfGalaxyPairLengths = 0;
     for (const galaxyPair of galaxyPairs) {
-        const firstGalaxyLocation: number[] = galaxyLocations.get(galaxyPair[0])!;
-        const secondGalaxyLocation: number[] = galaxyLocations.get(galaxyPair[1])!;
+        const firstGalaxyLocation: number[] = galaxyLocations.get(
+            galaxyPair[0],
+        )!;
+        const secondGalaxyLocation: number[] = galaxyLocations.get(
+            galaxyPair[1],
+        )!;
         const [targetRow, targetCol] = firstGalaxyLocation;
-        let [currRow, currCol] = secondGalaxyLocation;
-        let distance = Math.abs(targetRow - currRow) + Math.abs(targetCol - currCol);
+        const [currRow, currCol] = secondGalaxyLocation;
+        const distance =
+            Math.abs(targetRow - currRow) + Math.abs(targetCol - currCol);
         // let stepCount = 0;
 
         // while (currRow !== targetRow || currCol !== targetCol) {
@@ -188,4 +201,5 @@ export async function day11() {
 
     console.log('galaxyPairLengths', galaxyPairLengths);
     console.log('sumOfGalaxyPairLengths', sumOfGalaxyPairLengths);
+    return sumOfGalaxyPairLengths;
 }

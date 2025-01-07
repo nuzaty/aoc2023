@@ -1,11 +1,9 @@
-
-import { readLines, spiltWith } from "../utils";
-
+import {readLines, spiltWith} from '../utils';
 
 type LensInfo = {
-    label: string,
-    focusLength: number
-}
+    label: string;
+    focusLength: number;
+};
 
 function getHashVal(str: string) {
     let hashVal = 0;
@@ -18,16 +16,12 @@ function getHashVal(str: string) {
     return hashVal;
 }
 
-export default async function () {
-
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1 : read input into array
     let initSeq: string[] = [];
     for await (const line of readLines('./src/day15/input.txt')) {
         initSeq = [...initSeq, ...spiltWith(',', line)];
     }
-
 
     if (isPart1) {
         // step 2: find sum of HASH algorithm
@@ -36,6 +30,7 @@ export default async function () {
             sum += getHashVal(seq);
         }
         console.log('sum', sum);
+        return sum;
     } else {
         // step 2: arrange lens into each box
         const lensBoxes = new Map<number, LensInfo[]>();
@@ -51,7 +46,7 @@ export default async function () {
                 }
             } else {
                 // equals sign operator
-                const [label, focusLength] = spiltWith("=", seq);
+                const [label, focusLength] = spiltWith('=', seq);
                 const boxNum = getHashVal(label);
                 const box = lensBoxes.get(boxNum);
                 if (box) {
@@ -59,15 +54,18 @@ export default async function () {
                     const elIndex = box.findIndex(el => el.label === label);
                     if (elIndex !== -1) {
                         // case 1: If there is already a lens
-                        box[elIndex] = { ...box[elIndex], focusLength: Number(focusLength) }
+                        box[elIndex] = {
+                            ...box[elIndex],
+                            focusLength: Number(focusLength),
+                        };
                     } else {
                         // case 2: If there is not already a lens
-                        box.push({ label, focusLength: Number(focusLength) });
+                        box.push({label, focusLength: Number(focusLength)});
                     }
                 } else {
                     // case no box
                     const newBox: LensInfo[] = [];
-                    newBox.push({ label, focusLength: Number(focusLength) });
+                    newBox.push({label, focusLength: Number(focusLength)});
                     lensBoxes.set(boxNum, newBox);
                 }
             }
@@ -79,11 +77,12 @@ export default async function () {
         for (const [boxNum, box] of lensBoxes) {
             for (let i = 0; i < box.length; i++) {
                 const slotNum = i + 1;
-                const { focusLength } = box[i];
-                focusingPower += ((1 + boxNum) * slotNum * focusLength);
+                const {focusLength} = box[i];
+                focusingPower += (1 + boxNum) * slotNum * focusLength;
             }
         }
 
         console.log('focusingPower', focusingPower);
+        return focusingPower;
     }
 }

@@ -10,14 +10,7 @@ type MapProp = {
     mapRepeatOneDirection: number;
 };
 
-type PartialReached = {
-    largeArea: number; // A
-    smallArea: number; // B
-};
-
-export default async function () {
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1 read puzzle input
     const [tiles, startPosition] = await readPuzzleInput();
     console.log(startPosition);
@@ -26,6 +19,7 @@ export default async function () {
     if (isPart1) {
         const plotReached = findReached(64, startPosition, tiles, false);
         console.log('total reached', plotReached.size);
+        return plotReached.size;
     } else {
         const maxStep = 26501365;
         const mapWidth = tiles[0].length;
@@ -94,6 +88,7 @@ export default async function () {
             Math.round(c);
 
         console.log('part 2 reached', reached);
+        return reached;
     }
 }
 
@@ -115,30 +110,6 @@ function findReachedInfinite(
         );
 
     console.log('total reached', plotReached.size);
-    return plotReached.size;
-}
-
-function findReachedFinite(
-    step: number,
-    startPos: Position,
-    {tiles}: MapProp,
-    canOutOfBound = false,
-    label = '',
-    debug = false,
-): number {
-    const plotReached = findReached(
-        step,
-        startPos,
-        tiles,
-        false,
-        canOutOfBound,
-    );
-    if (debug) {
-        console.log(label, 'start at', startPos);
-        renderMap(tiles, plotReached, 1, startPos, false, debug);
-        console.log('total reached', plotReached.size);
-    }
-
     return plotReached.size;
 }
 
@@ -220,7 +191,6 @@ function renderMap(
     mapSize: number,
     startPos: Position,
     infinite: boolean,
-    debug = false,
 ) {
     const width = tiles[0].length;
     const height = tiles.length;
@@ -383,166 +353,6 @@ function getLastTileWidth(
     if (lastTileWidth === 0) lastTileWidth = mapWidth;
 
     return lastTileWidth;
-}
-
-// E = evenMap
-function findEvenMapReached(startPosition: Position, mapProp: MapProp): number {
-    const {mapWidth} = mapProp;
-    let step = 3 * mapWidth;
-    if (step % 2 !== 0) step += 1;
-
-    return findReachedFinite(step, startPosition, mapProp);
-}
-
-// O = oddMap
-function findOddMapReached(startPosition: Position, mapProp: MapProp): number {
-    const {mapWidth} = mapProp;
-    let step = 3 * mapWidth;
-    if (step % 2 === 0) step += 1;
-    return findReachedFinite(step, startPosition, mapProp);
-}
-
-// A = largePartialMap
-// B = smallPartialMap
-// find partialMap reached only map width is odd
-function findPartialMapReached(mapProp: MapProp): PartialReached {
-    const {mapWidth, halfMapWidth, lastTileWidth} = mapProp;
-    if (mapWidth % 2 === 0) throw new Error('Not support even map width');
-
-    const startPos1: Position = [
-        mapWidth + halfMapWidth,
-        mapWidth + halfMapWidth,
-    ];
-    const startPos2: Position = [mapWidth + halfMapWidth, -halfMapWidth - 1];
-    const startPos3: Position = [-halfMapWidth - 1, -halfMapWidth - 1];
-    const startPos4: Position = [-halfMapWidth - 1, mapWidth + halfMapWidth];
-
-    if (lastTileWidth < halfMapWidth + 1) {
-        const aStep = halfMapWidth + 2 * mapWidth + lastTileWidth;
-        const a1 = findReachedFinite(aStep, startPos1, mapProp, true, 'a1');
-        const a2 = findReachedFinite(aStep, startPos2, mapProp, true, 'a2');
-        const a3 = findReachedFinite(aStep, startPos3, mapProp, true, 'a3');
-        const a4 = findReachedFinite(aStep, startPos4, mapProp, true, 'a4');
-
-        const bStep = halfMapWidth + mapWidth + lastTileWidth;
-        const b1 = findReachedFinite(bStep, startPos1, mapProp, true, 'b1');
-        const b2 = findReachedFinite(bStep, startPos2, mapProp, true, 'b2');
-        const b3 = findReachedFinite(bStep, startPos3, mapProp, true, 'b3');
-        const b4 = findReachedFinite(bStep, startPos4, mapProp, true, 'b4');
-
-        console.log('case1');
-        return {
-            largeArea: a1 + a2 + a3 + a4,
-            smallArea: b1 + b2 + b3 + b4,
-        };
-    } else if (lastTileWidth === halfMapWidth + 1) {
-        const aStep = halfMapWidth + mapWidth + lastTileWidth;
-        const a1 = findReachedFinite(aStep, startPos1, mapProp, true, 'a1');
-        const a2 = findReachedFinite(aStep, startPos2, mapProp, true, 'a2');
-        const a3 = findReachedFinite(aStep, startPos3, mapProp, true, 'a3');
-        const a4 = findReachedFinite(aStep, startPos4, mapProp, true, 'a4');
-
-        console.log('case2');
-        return {
-            largeArea: a1 + a2 + a3 + a4,
-            smallArea: 0,
-        };
-    } else {
-        // TODO
-        const aStep = halfMapWidth + mapWidth + lastTileWidth;
-        const a1 = findReachedFinite(
-            aStep,
-            startPos1,
-            mapProp,
-            true,
-            'a1',
-            true,
-        );
-        const a2 = findReachedFinite(
-            aStep,
-            startPos2,
-            mapProp,
-            true,
-            'a2',
-            true,
-        );
-        const a3 = findReachedFinite(
-            aStep,
-            startPos3,
-            mapProp,
-            true,
-            'a3',
-            true,
-        );
-        const a4 = findReachedFinite(
-            aStep,
-            startPos4,
-            mapProp,
-            true,
-            'a4',
-            true,
-        );
-
-        const bStep = halfMapWidth + lastTileWidth;
-        const b1 = findReachedFinite(
-            bStep,
-            startPos1,
-            mapProp,
-            true,
-            'b1',
-            false,
-        );
-        const b2 = findReachedFinite(
-            bStep,
-            startPos2,
-            mapProp,
-            true,
-            'b2',
-            false,
-        );
-        const b3 = findReachedFinite(
-            bStep,
-            startPos3,
-            mapProp,
-            true,
-            'b3',
-            false,
-        );
-        const b4 = findReachedFinite(
-            bStep,
-            startPos4,
-            mapProp,
-            true,
-            'b4',
-            false,
-        );
-
-        console.log('case3');
-        return {
-            largeArea: a1 + a2 + a3 + a4,
-            smallArea: b1 + b2 + b3 + b4,
-        };
-    }
-}
-// C = connerPartialMap
-
-function findConnerPartialMapReached(mapProp: MapProp): number {
-    const {mapWidth, halfMapWidth, lastTileWidth} = mapProp;
-    const cStep = halfMapWidth + lastTileWidth;
-
-    const startPos1: Position = [halfMapWidth, mapWidth + halfMapWidth];
-    const c1 = findReachedFinite(cStep, startPos1, mapProp, true, 'c1', false);
-
-    const startPos2: Position = [halfMapWidth + mapWidth, halfMapWidth];
-    const c2 = findReachedFinite(cStep, startPos2, mapProp, true, 'c2', false);
-
-    const startPos3: Position = [halfMapWidth, -1 - halfMapWidth];
-    const c3 = findReachedFinite(cStep, startPos3, mapProp, true, 'c3', false);
-
-    const startPos4: Position = [-1 - halfMapWidth, halfMapWidth];
-    const c4 = findReachedFinite(cStep, startPos4, mapProp, true, 'c4', false);
-
-    return c1 + c2 + c3 + c4;
 }
 
 type DataPoint = {x: number; y: number};

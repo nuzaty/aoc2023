@@ -19,17 +19,12 @@ type Intersection = {
     z?: number;
 };
 
-export default async function () {
-    const isPart1 = false;
+export default async function (isPart1: boolean): Promise<number> {
     //  read input
     const stones = await readPuzzleInput();
 
-    if (isPart1) doPart1(stones);
-    else await doPart2(stones);
-
-    // force quit the process because z-solver is not terminating properly.
-    // eslint-disable-next-line n/no-process-exit
-    process.exit(0);
+    if (isPart1) return doPart1(stones);
+    else return doPart2(stones);
 }
 async function readPuzzleInput(): Promise<Stone[]> {
     const stones: Stone[] = [];
@@ -54,7 +49,7 @@ async function readPuzzleInput(): Promise<Stone[]> {
     return stones;
 }
 
-function doPart1(stones: Stone[]) {
+function doPart1(stones: Stone[]): number {
     // PART1: find all the future intersections with each stone
 
     const testAreaRange = [200000000000000, 400000000000000];
@@ -108,9 +103,10 @@ function doPart1(stones: Stone[]) {
     }
 
     console.log(intersections, intersections.length);
+    return intersections.length;
 }
 
-async function doPart2(stones: Stone[]) {
+async function doPart2(stones: Stone[]): Promise<number> {
     const {Context} = await init();
     const {Solver, Int} = Context('main');
 
@@ -155,14 +151,12 @@ async function doPart2(stones: Stone[]) {
         }
 
         console.log('resultModel', resultModel);
-        console.log(
-            'sum of x,y,z',
+        const result =
             Number(resultModel.x) +
-                Number(resultModel.y) +
-                Number(resultModel.z),
-        );
-
-        return;
+            Number(resultModel.y) +
+            Number(resultModel.z);
+        console.log('sum of x,y,z', result);
+        return result;
     }
     throw new Error('cant solve part 2');
 }

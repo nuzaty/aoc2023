@@ -1,5 +1,5 @@
 class PriorityQueue<Type> {
-    values: {node: Type, priority: number}[] = []
+    values: {node: Type; priority: number}[] = [];
 
     enqueue(node: Type, priority: number): void {
         let flag = false;
@@ -15,7 +15,7 @@ class PriorityQueue<Type> {
         }
     }
 
-    dequeue(): {node: Type; priority: number;} | undefined {
+    dequeue(): {node: Type; priority: number} | undefined {
         return this.values.shift();
     }
 
@@ -23,6 +23,5 @@ class PriorityQueue<Type> {
         return this.values.length;
     }
 }
-
 
 export default PriorityQueue;

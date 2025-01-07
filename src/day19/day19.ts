@@ -367,9 +367,7 @@ export function splitRangeWithCondNum(
     }
 }
 
-export default async function () {
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1: read input
     const [workflows, partRatings] = await readInput();
 
@@ -386,6 +384,7 @@ export default async function () {
             }
         }
         console.log('sumRating', sumRating);
+        return sumRating;
     } else {
         // step 2 (PART 2): find possible combinations of ratings will be accepted
         const startProcess: RatingRange = {
@@ -427,5 +426,6 @@ export default async function () {
         }
 
         console.log('totalCombination', totalCombination);
+        return totalCombination;
     }
 }

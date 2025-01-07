@@ -1,11 +1,14 @@
 import {readLines, spiltWith, spiltWithSpace} from '../utils';
 import fs from 'fs';
 
-export default async function () {
-    // step 1 : read input
+export default async function (isPart1: boolean): Promise<number> {
+    // read input
     const originalGraph = await readPuzzleInput(false);
     const graph = await readPuzzleInput(true);
 
+    // gen graph map data file
+    const dataFile = 'src/day25/graph_output.txt';
+    if (fs.existsSync(dataFile)) fs.unlinkSync(dataFile);
     const lines = new Set<string>();
     for (const [key, val] of originalGraph) {
         for (const value of val) {
@@ -15,7 +18,7 @@ export default async function () {
             }
             lines.add(line);
 
-            fs.appendFile('day25_output.txt', line + '\n', err => {
+            fs.appendFile(dataFile, line + '\n', err => {
                 if (err) {
                     console.error(err);
                 } else {
@@ -28,16 +31,24 @@ export default async function () {
     console.log('groupBefore: ', groupBefore);
 
     // cheating by graph visualization from day25_output.txt (data plot in python networkx) :P
-    disconnect('kpc', 'nnl', graph);
-    disconnect('rkh', 'sph', graph);
-    disconnect('mnf', 'hrs', graph);
+    for (const [node1, node2] of [
+        ['kpc', 'nnl'],
+        ['rkh', 'sph'],
+        ['mnf', 'hrs'],
+    ]) {
+        disconnect(node1, node2, graph);
+    }
 
     const groupAfter = countGroup(graph);
     console.log('groupAfter: ', groupAfter);
 
-    if (groupAfter === 2) {
+    if (isPart1 && groupAfter === 2) {
         const groupsSize = findGroupsSize(graph);
-        console.log('PART1 result: ', groupsSize[0] * groupsSize[1]);
+        const result = groupsSize[0] * groupsSize[1];
+        console.log('PART1 result: ', result);
+        return result;
+    } else {
+        return 0;
     }
 }
 async function readPuzzleInput(

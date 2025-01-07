@@ -1,52 +1,55 @@
-import { readLines, spiltWith } from "../utils";
+import {readLines, spiltWith} from '../utils';
 
 const Directions = Object.freeze({
-    NONE: Symbol("none"),
-    UP: Symbol("up"),
-    DOWN: Symbol("down"),
-    LEFT: Symbol("left"),
-    RIGHT: Symbol("right"),
+    NONE: Symbol('none'),
+    UP: Symbol('up'),
+    DOWN: Symbol('down'),
+    LEFT: Symbol('left'),
+    RIGHT: Symbol('right'),
 });
 
 const Colors = Object.freeze({
-    RED: Symbol("red"),
-    BLUE: Symbol("blue"),
-    YELLOW: Symbol("yellow"),
-    GREEN: Symbol("green"),
-    MAGENTA: Symbol("magenta"),
+    RED: Symbol('red'),
+    BLUE: Symbol('blue'),
+    YELLOW: Symbol('yellow'),
+    GREEN: Symbol('green'),
+    MAGENTA: Symbol('magenta'),
 });
 
 type AdjacentTile = {
     pipeType?: string;
     row: number;
     col: number;
-    direction?: Symbol
-}
+    direction?: Symbol;
+};
 type Coordinate = {
     row: number;
     col: number;
-}
+};
 
 type ScanDetail = {
-    directionLeftTiles: Coordinate[] | undefined,
-    directionRightTiles: Coordinate[] | undefined,
-    walkDirection: Symbol,
-    prevTile: Coordinate
-}
+    directionLeftTiles: Coordinate[] | undefined;
+    directionRightTiles: Coordinate[] | undefined;
+    walkDirection: Symbol;
+    prevTile: Coordinate;
+};
 
 const coordToString = (coord: Coordinate): string => {
     return `(${coord.row},${coord.col})`;
-}
+};
 
 const stringToCoord = (str: string): Coordinate => {
     const token = spiltWith(',', str.slice(1, -1));
     return {
         row: Number(token[0]),
         col: Number(token[1]),
-    }
-}
+    };
+};
 
-const getAdjacentTiles = (tiles: string[][], tile: AdjacentTile): AdjacentTile[] => {
+const getAdjacentTiles = (
+    tiles: string[][],
+    tile: AdjacentTile,
+): AdjacentTile[] => {
     const adjacentTiles: AdjacentTile[] = [];
     const col = tile.col;
     const row = tile.row;
@@ -55,7 +58,7 @@ const getAdjacentTiles = (tiles: string[][], tile: AdjacentTile): AdjacentTile[]
             pipeType: tiles[row][col - 1],
             row: row,
             col: col - 1,
-            direction: Directions.LEFT
+            direction: Directions.LEFT,
         });
     }
     if (col + 1 < tiles[row].length) {
@@ -63,7 +66,7 @@ const getAdjacentTiles = (tiles: string[][], tile: AdjacentTile): AdjacentTile[]
             pipeType: tiles[row][col + 1],
             row: row,
             col: col + 1,
-            direction: Directions.RIGHT
+            direction: Directions.RIGHT,
         });
     }
     if (row - 1 >= 0) {
@@ -71,7 +74,7 @@ const getAdjacentTiles = (tiles: string[][], tile: AdjacentTile): AdjacentTile[]
             pipeType: tiles[row - 1][col],
             row: row - 1,
             col: col,
-            direction: Directions.UP
+            direction: Directions.UP,
         });
     }
     if (row + 1 < tiles.length) {
@@ -79,42 +82,56 @@ const getAdjacentTiles = (tiles: string[][], tile: AdjacentTile): AdjacentTile[]
             pipeType: tiles[row + 1][col],
             row: row + 1,
             col: col,
-            direction: Directions.DOWN
+            direction: Directions.DOWN,
         });
     }
     return adjacentTiles;
-}
+};
 
 const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
     if (src.pipeType === 'S') {
         if (dest.pipeType === '|') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.DOWN;
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.DOWN
+            );
         }
         if (dest.pipeType === '-') {
-            return dest.direction === Directions.LEFT
-                || dest.direction === Directions.RIGHT;
+            return (
+                dest.direction === Directions.LEFT ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === 'L') {
-            return dest.direction === Directions.DOWN
-                || dest.direction === Directions.LEFT;
+            return (
+                dest.direction === Directions.DOWN ||
+                dest.direction === Directions.LEFT
+            );
         }
         if (dest.pipeType === 'J') {
-            return dest.direction === Directions.DOWN
-                || dest.direction === Directions.RIGHT;
+            return (
+                dest.direction === Directions.DOWN ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === '7') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.RIGHT
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === 'F') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.LEFT
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.LEFT
+            );
         }
     } else if (src.pipeType === '|') {
         if (dest.pipeType === '|') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.DOWN;
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.DOWN
+            );
         }
         if (dest.pipeType === '-') {
             return false;
@@ -136,8 +153,10 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
             return false;
         }
         if (dest.pipeType === '-') {
-            return dest.direction === Directions.LEFT
-                || dest.direction === Directions.RIGHT;
+            return (
+                dest.direction === Directions.LEFT ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === 'L') {
             return dest.direction === Directions.LEFT;
@@ -165,8 +184,10 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
             return dest.direction === Directions.RIGHT;
         }
         if (dest.pipeType === '7') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.RIGHT;
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === 'F') {
             return dest.direction === Directions.UP;
@@ -188,8 +209,10 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
             return dest.direction === Directions.UP;
         }
         if (dest.pipeType === 'F') {
-            return dest.direction === Directions.UP
-                || dest.direction === Directions.LEFT;
+            return (
+                dest.direction === Directions.UP ||
+                dest.direction === Directions.LEFT
+            );
         }
     } else if (src.pipeType === '7') {
         if (dest.pipeType === '|') {
@@ -199,8 +222,10 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
             return dest.direction === Directions.LEFT;
         }
         if (dest.pipeType === 'L') {
-            return dest.direction === Directions.LEFT
-                || dest.direction === Directions.DOWN;
+            return (
+                dest.direction === Directions.LEFT ||
+                dest.direction === Directions.DOWN
+            );
         }
         if (dest.pipeType === 'J') {
             return dest.direction === Directions.DOWN;
@@ -222,8 +247,10 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
             return dest.direction === Directions.DOWN;
         }
         if (dest.pipeType === 'J') {
-            return dest.direction === Directions.DOWN
-                || dest.direction === Directions.RIGHT;
+            return (
+                dest.direction === Directions.DOWN ||
+                dest.direction === Directions.RIGHT
+            );
         }
         if (dest.pipeType === '7') {
             return dest.direction === Directions.RIGHT;
@@ -233,14 +260,17 @@ const isWalkable = (src: AdjacentTile, dest: AdjacentTile): boolean => {
         }
     }
 
-    if (dest.pipeType === '.' || dest.pipeType === 'S')
-        return false;
+    if (dest.pipeType === '.' || dest.pipeType === 'S') return false;
 
     throw new Error('invalid pipe type: ' + src + ', ' + dest);
-}
+};
 
-const getSideTileByDirection = (tiles: string[][], coord: Coordinate, direction: Symbol, pipeLoopMap: Map<string, string>): Coordinate[][] => {
-
+const getSideTileByDirection = (
+    tiles: string[][],
+    coord: Coordinate,
+    direction: Symbol,
+    pipeLoopMap: Map<string, string>,
+): Coordinate[][] => {
     const maxRow = tiles.length - 1;
     const maxCol = tiles[0].length - 1;
 
@@ -255,125 +285,123 @@ const getSideTileByDirection = (tiles: string[][], coord: Coordinate, direction:
 
     if (direction === Directions.RIGHT) {
         if (coord.row - 1 >= 0)
-            leftSideTiles.push({ row: coord.row - 1, col: coord.col });
+            leftSideTiles.push({row: coord.row - 1, col: coord.col});
         if (coord.row + 1 <= maxRow)
-            rightSideTiles.push({ row: coord.row + 1, col: coord.col });
+            rightSideTiles.push({row: coord.row + 1, col: coord.col});
 
         if (pipeType === '7') {
             if (coord.row - 1 >= 0 && coord.col + 1 <= maxCol)
-                leftSideTiles.push({ row: coord.row - 1, col: coord.col + 1 });
+                leftSideTiles.push({row: coord.row - 1, col: coord.col + 1});
             if (coord.col + 1 <= maxCol)
-                leftSideTiles.push({ row: coord.row, col: coord.col + 1 });
+                leftSideTiles.push({row: coord.row, col: coord.col + 1});
         }
         if (pipeType === 'J') {
             if (coord.row + 1 <= maxRow && coord.col + 1 <= maxCol)
-                rightSideTiles.push({ row: coord.row + 1, col: coord.col + 1 });
+                rightSideTiles.push({row: coord.row + 1, col: coord.col + 1});
             if (coord.col + 1 <= maxCol)
-                rightSideTiles.push({ row: coord.row, col: coord.col + 1 });
+                rightSideTiles.push({row: coord.row, col: coord.col + 1});
         }
     } else if (direction === Directions.LEFT) {
         if (coord.row + 1 <= maxRow)
-            leftSideTiles.push({ row: coord.row + 1, col: coord.col });
+            leftSideTiles.push({row: coord.row + 1, col: coord.col});
         if (coord.row - 1 >= 0)
-            rightSideTiles.push({ row: coord.row - 1, col: coord.col });
+            rightSideTiles.push({row: coord.row - 1, col: coord.col});
 
         if (pipeType === 'L') {
             if (coord.col - 1 >= 0)
-                leftSideTiles.push({ row: coord.row, col: coord.col - 1 });
+                leftSideTiles.push({row: coord.row, col: coord.col - 1});
             if (coord.row + 1 <= maxRow && coord.col - 1 >= 0)
-                leftSideTiles.push({ row: coord.row + 1, col: coord.col - 1 });
+                leftSideTiles.push({row: coord.row + 1, col: coord.col - 1});
         }
         if (pipeType === 'F') {
             if (coord.row - 1 >= 0 && coord.col - 1 >= 0)
-                rightSideTiles.push({ row: coord.row - 1, col: coord.col - 1 });
+                rightSideTiles.push({row: coord.row - 1, col: coord.col - 1});
             if (coord.col - 1 >= 0)
-                rightSideTiles.push({ row: coord.row, col: coord.col - 1 });
+                rightSideTiles.push({row: coord.row, col: coord.col - 1});
         }
     } else if (direction === Directions.UP) {
         if (coord.col - 1 >= 0)
-            leftSideTiles.push({ row: coord.row, col: coord.col - 1 });
+            leftSideTiles.push({row: coord.row, col: coord.col - 1});
         if (coord.col + 1 <= maxCol)
-            rightSideTiles.push({ row: coord.row, col: coord.col + 1 });
+            rightSideTiles.push({row: coord.row, col: coord.col + 1});
 
         if (pipeType === 'F') {
             if (coord.row - 1 >= 0 && coord.col - 1 >= 0)
-                leftSideTiles.push({ row: coord.row - 1, col: coord.col - 1 });
+                leftSideTiles.push({row: coord.row - 1, col: coord.col - 1});
             if (coord.row - 1 >= 0)
-                leftSideTiles.push({ row: coord.row - 1, col: coord.col });
+                leftSideTiles.push({row: coord.row - 1, col: coord.col});
         }
         if (pipeType === '7') {
             if (coord.row - 1 >= 0)
-                rightSideTiles.push({ row: coord.row - 1, col: coord.col });
+                rightSideTiles.push({row: coord.row - 1, col: coord.col});
             if (coord.row - 1 >= 0 && coord.col + 1 <= maxCol)
-                rightSideTiles.push({ row: coord.row - 1, col: coord.col + 1 });
+                rightSideTiles.push({row: coord.row - 1, col: coord.col + 1});
         }
     } else if (direction === Directions.DOWN) {
         if (coord.col + 1 <= maxCol)
-            leftSideTiles.push({ row: coord.row, col: coord.col + 1 });
+            leftSideTiles.push({row: coord.row, col: coord.col + 1});
         if (coord.col - 1 >= 0)
-            rightSideTiles.push({ row: coord.row, col: coord.col - 1 });
+            rightSideTiles.push({row: coord.row, col: coord.col - 1});
 
         if (pipeType === 'J') {
             if (coord.row + 1 <= maxRow && coord.col + 1 <= maxCol)
-                leftSideTiles.push({ row: coord.row + 1, col: coord.col + 1 });
+                leftSideTiles.push({row: coord.row + 1, col: coord.col + 1});
             if (coord.row + 1 <= maxRow)
-                leftSideTiles.push({ row: coord.row + 1, col: coord.col });
+                leftSideTiles.push({row: coord.row + 1, col: coord.col});
         }
         if (pipeType === 'L') {
             if (coord.row + 1 <= maxRow && coord.col - 1 >= 0)
-                rightSideTiles.push({ row: coord.row + 1, col: coord.col - 1 });
+                rightSideTiles.push({row: coord.row + 1, col: coord.col - 1});
             if (coord.row + 1 <= maxRow)
-                rightSideTiles.push({ row: coord.row + 1, col: coord.col });
+                rightSideTiles.push({row: coord.row + 1, col: coord.col});
         }
     } else {
         throw new Error('Unknown direciton' + direction);
     }
     return [leftSideTiles, rightSideTiles];
+};
 
-}
-
-const getStartTilePipeType = (startTile: Coordinate, pipeLoopMap: Map<string, string>): string => {
+const getStartTilePipeType = (
+    startTile: Coordinate,
+    pipeLoopMap: Map<string, string>,
+): string => {
     const [firstDest, firstSrc] = pipeLoopMap.entries().next().value!;
     const [lastDest, lastSrc] = Array.from(pipeLoopMap)[pipeLoopMap.size - 1];
 
-    const incomingDireciton = findDirection(stringToCoord(lastSrc), stringToCoord(lastDest));
-    const outgoingDireciton = findDirection(stringToCoord(firstSrc), stringToCoord(firstDest));
+    const incomingDireciton = findDirection(
+        stringToCoord(lastSrc),
+        stringToCoord(lastDest),
+    );
+    const outgoingDireciton = findDirection(
+        stringToCoord(firstSrc),
+        stringToCoord(firstDest),
+    );
 
     if (incomingDireciton === Directions.UP) {
-        if (outgoingDireciton === Directions.RIGHT)
-            return 'F';
-        if (outgoingDireciton === Directions.LEFT)
-            return '7';
-        if (outgoingDireciton === Directions.UP)
-            return '|';
+        if (outgoingDireciton === Directions.RIGHT) return 'F';
+        if (outgoingDireciton === Directions.LEFT) return '7';
+        if (outgoingDireciton === Directions.UP) return '|';
     }
     if (incomingDireciton === Directions.LEFT) {
-        if (outgoingDireciton === Directions.LEFT)
-            return '-';
-        if (outgoingDireciton === Directions.UP)
-            return 'L';
-        if (outgoingDireciton === Directions.DOWN)
-            return 'F';
+        if (outgoingDireciton === Directions.LEFT) return '-';
+        if (outgoingDireciton === Directions.UP) return 'L';
+        if (outgoingDireciton === Directions.DOWN) return 'F';
     }
     if (incomingDireciton === Directions.DOWN) {
-        if (outgoingDireciton === Directions.DOWN)
-            return '|';
-        if (outgoingDireciton === Directions.RIGHT)
-            return 'L';
-        if (outgoingDireciton === Directions.LEFT)
-            return 'J';
+        if (outgoingDireciton === Directions.DOWN) return '|';
+        if (outgoingDireciton === Directions.RIGHT) return 'L';
+        if (outgoingDireciton === Directions.LEFT) return 'J';
     }
     if (incomingDireciton === Directions.RIGHT) {
-        if (outgoingDireciton === Directions.RIGHT)
-            return '-';
-        if (outgoingDireciton === Directions.UP)
-            return 'J';
-        if (outgoingDireciton === Directions.DOWN)
-            return '7';
+        if (outgoingDireciton === Directions.RIGHT) return '-';
+        if (outgoingDireciton === Directions.UP) return 'J';
+        if (outgoingDireciton === Directions.DOWN) return '7';
     }
 
-    throw new Error('invalid direction: ' + incomingDireciton + ', ' + outgoingDireciton);
-}
+    throw new Error(
+        'invalid direction: ' + incomingDireciton + ', ' + outgoingDireciton,
+    );
+};
 
 const renderMap = (tiles: string[][], newConsole?: boolean) => {
     if (newConsole) {
@@ -384,7 +412,7 @@ const renderMap = (tiles: string[][], newConsole?: boolean) => {
             }
             mapText += '\n';
         }
-        console.log(mapText)
+        console.log(mapText);
     } else {
         for (const tileRow of tiles) {
             for (const tile of tileRow) {
@@ -393,7 +421,7 @@ const renderMap = (tiles: string[][], newConsole?: boolean) => {
             process.stdout.write('\n');
         }
     }
-}
+};
 
 const colorToConsoleCode = (color: Symbol): string[] => {
     let codes: number[] = [];
@@ -413,14 +441,19 @@ const colorToConsoleCode = (color: Symbol): string[] => {
     }
 
     return ['\x1b[' + codes[0] + 'm', '\x1b[' + codes[1] + 'm'];
-}
+};
 
 const getColorText = (text: string, color: Symbol): string => {
-    let codes = colorToConsoleCode(color);
+    const codes = colorToConsoleCode(color);
     return codes[0] + text + codes[1] + '\x1b[0m';
-}
+};
 
-const renderWalkMap = (inputMap: string[][], walkMaps: Map<string, string>[], colors: Symbol[], renderNumber: boolean) => {
+const renderWalkMap = (
+    inputMap: string[][],
+    walkMaps: Map<string, string>[],
+    colors: Symbol[],
+    renderNumber: boolean,
+) => {
     const map = inputMap.map(el => el.slice());
     const yellowColorCode = colorToConsoleCode(Colors.YELLOW);
 
@@ -429,44 +462,60 @@ const renderWalkMap = (inputMap: string[][], walkMaps: Map<string, string>[], co
         const colorCodes = colorToConsoleCode(colors[walkMapIndex]);
         let step = 1;
         let isStart = true;
-        for (const [dest, src] of walkMap) {
-
+        for (const src of walkMap.values()) {
             // skip first tile
             if (isStart) {
                 isStart = false;
                 continue;
             }
             const srcCoord = stringToCoord(src);
-            map[srcCoord.row][srcCoord.col] = colorCodes[0] + (renderNumber ? (step % 10) : map[srcCoord.row][srcCoord.col]) + colorCodes[1] + '\x1b[0m';
+            map[srcCoord.row][srcCoord.col] =
+                colorCodes[0] +
+                (renderNumber ? step % 10 : map[srcCoord.row][srcCoord.col]) +
+                colorCodes[1] +
+                '\x1b[0m';
             step++;
         }
 
         // handle last tile
-        const endCoord = stringToCoord(Array.from(walkMap)[walkMap.size - 1][0]);
-        map[endCoord.row][endCoord.col] = yellowColorCode[0] + (renderNumber ? (step % 10) : map[endCoord.row][endCoord.col]) + yellowColorCode[1] + '\x1b[0m';
+        const endCoord = stringToCoord(
+            Array.from(walkMap)[walkMap.size - 1][0],
+        );
+        map[endCoord.row][endCoord.col] =
+            yellowColorCode[0] +
+            (renderNumber ? step % 10 : map[endCoord.row][endCoord.col]) +
+            yellowColorCode[1] +
+            '\x1b[0m';
 
         walkMapIndex++;
     }
 
     // handle first tile
     const startCoord = stringToCoord(walkMaps[0].values().next().value!); // any walk map is ok because it should be start at the same tile
-    map[startCoord.row][startCoord.col] = yellowColorCode[0] + map[startCoord.row][startCoord.col] + yellowColorCode[1] + '\x1b[0m';
-
+    map[startCoord.row][startCoord.col] =
+        yellowColorCode[0] +
+        map[startCoord.row][startCoord.col] +
+        yellowColorCode[1] +
+        '\x1b[0m';
 
     renderMap(map);
-}
+};
 
-const renderScanMap = (inputMap: string[][], pipeLoopMap: Map<string, string>, scanMap: Map<string, ScanDetail>, activeTile?: Coordinate) => {
+const renderScanMap = (
+    inputMap: string[][],
+    pipeLoopMap: Map<string, string>,
+    scanMap: Map<string, ScanDetail>,
+    activeTile?: Coordinate,
+) => {
     const map = inputMap.map(el => el.slice());
 
-    for (const [dest, src] of pipeLoopMap) {
+    for (const src of pipeLoopMap.values()) {
         const srcCoord = stringToCoord(src);
-        let loopSymbol: string = inputMap[srcCoord.row][srcCoord.col];
+        const loopSymbol: string = inputMap[srcCoord.row][srcCoord.col];
         map[srcCoord.row][srcCoord.col] = getColorText(loopSymbol, Colors.RED);
     }
 
-    for (const [dest, { directionLeftTiles, directionRightTiles }] of scanMap) {
-
+    for (const {directionLeftTiles, directionRightTiles} of scanMap.values()) {
         if (directionLeftTiles) {
             for (const directionLeftTile of directionLeftTiles) {
                 const leftCol = directionLeftTile.col;
@@ -491,21 +540,34 @@ const renderScanMap = (inputMap: string[][], pipeLoopMap: Map<string, string>, s
         map[activeTile.row][activeTile.col] = getColorText('@', Colors.YELLOW);
 
     renderMap(map, true);
-}
+};
 
-const renderFloodMap = (inputMap: string[][], pipeLoopMap: Map<string, string>, allFloods: Set<string>[], floodSymbols: string[], floodColor: Symbol[], activeTile?: Coordinate) => {
+const renderFloodMap = (
+    inputMap: string[][],
+    pipeLoopMap: Map<string, string>,
+    allFloods: Set<string>[],
+    floodSymbols: string[],
+    floodColor: Symbol[],
+    activeTile?: Coordinate,
+) => {
     const map = inputMap.map(el => el.slice());
 
-    for (const [dest, src] of pipeLoopMap) {
+    for (const src of pipeLoopMap.values()) {
         const srcCoord = stringToCoord(src);
-        map[srcCoord.row][srcCoord.col] = getColorText(map[srcCoord.row][srcCoord.col], Colors.RED);
+        map[srcCoord.row][srcCoord.col] = getColorText(
+            map[srcCoord.row][srcCoord.col],
+            Colors.RED,
+        );
     }
 
     let floodSymbolIndex = 0;
     for (const floods of allFloods) {
         for (const flood of floods) {
             const floodCoord = stringToCoord(flood);
-            map[floodCoord.row][floodCoord.col] = getColorText(floodSymbols[floodSymbolIndex], floodColor[floodSymbolIndex]);
+            map[floodCoord.row][floodCoord.col] = getColorText(
+                floodSymbols[floodSymbolIndex],
+                floodColor[floodSymbolIndex],
+            );
         }
         floodSymbolIndex++;
     }
@@ -514,33 +576,30 @@ const renderFloodMap = (inputMap: string[][], pipeLoopMap: Map<string, string>, 
         map[activeTile.row][activeTile.col] = getColorText('@', Colors.YELLOW);
 
     renderMap(map, true);
-}
+};
 
 const findDirection = (src: Coordinate, dest: Coordinate): Symbol => {
-    if (src.col < dest.col)
-        return Directions.RIGHT;
-    if (src.col > dest.col)
-        return Directions.LEFT;
-    if (src.row < dest.row)
-        return Directions.DOWN;
-    if (src.row > dest.row)
-        return Directions.UP;
+    if (src.col < dest.col) return Directions.RIGHT;
+    if (src.col > dest.col) return Directions.LEFT;
+    if (src.row < dest.row) return Directions.DOWN;
+    if (src.row > dest.row) return Directions.UP;
 
     return Directions.NONE;
-}
+};
 
-const isOnPipeLoop = (coord: Coordinate, pipeLoopMap: Map<string, string>): boolean => {
-    for (const [dest, src] of pipeLoopMap) {
+const isOnPipeLoop = (
+    coord: Coordinate,
+    pipeLoopMap: Map<string, string>,
+): boolean => {
+    for (const src of pipeLoopMap.values()) {
         const srcCoord = stringToCoord(src);
         if (srcCoord.row === coord.row && srcCoord.col === coord.col)
             return true;
     }
     return false;
-}
-
-export async function day10() {
-
-    let tiles: string[][] = [] // [row][col]
+};
+export default async function (isPart1: boolean): Promise<number> {
+    const tiles: string[][] = []; // [row][col]
     let startTile: AdjacentTile = {
         pipeType: '',
         row: -1,
@@ -558,7 +617,7 @@ export async function day10() {
                     pipeType: 'S',
                     row: rowIndex,
                     col: colIndex,
-                }
+                };
             }
             row.push(char);
             colIndex++;
@@ -568,7 +627,7 @@ export async function day10() {
         rowIndex++;
     }
     // console.log(tiles);
-    let foundFarthestTile = false;
+    const foundFarthestTile = false;
     let currTile1 = startTile;
     let currTile2 = startTile;
     const walkMap1 = new Map<string, string>();
@@ -585,25 +644,26 @@ export async function day10() {
 
         // step 2 walk to new tile of both ways
         for (const adjacentTile1 of adjacentTiles1) {
-
             if (isWalkable(currTile1, adjacentTile1)) {
                 const currCoord1: Coordinate = {
                     row: currTile1.row,
-                    col: currTile1.col
+                    col: currTile1.col,
                 };
                 const nextCoord1: Coordinate = {
                     row: adjacentTile1.row,
-                    col: adjacentTile1.col
+                    col: adjacentTile1.col,
                 };
                 if (!walkMap1.has(coordToString(nextCoord1))) {
-
                     // console.log('way 1: walk from', currCoord1, 'type:', currTile1.pipeType, 'to', nextCoord1, 'type:', adjacentTile1.pipeType, 'direction', adjacentTile1.direction);
                     currTile1 = adjacentTile1;
                     if (!firstWalk1) {
                         firstWalk1 = nextCoord1;
                     }
 
-                    walkMap1.set(coordToString(nextCoord1), coordToString(currCoord1));
+                    walkMap1.set(
+                        coordToString(nextCoord1),
+                        coordToString(currCoord1),
+                    );
                     // console.log('walkMap1', walkMap1);
 
                     break;
@@ -615,47 +675,59 @@ export async function day10() {
             if (isWalkable(currTile2, adjacentTile2)) {
                 const currCoord2: Coordinate = {
                     row: currTile2.row,
-                    col: currTile2.col
+                    col: currTile2.col,
                 };
                 const nextCoord2: Coordinate = {
                     row: adjacentTile2.row,
-                    col: adjacentTile2.col
+                    col: adjacentTile2.col,
                 };
 
-                const nextCoordIsFirstWalk1 = firstWalk1 && (firstWalk1.col === nextCoord2.col && firstWalk1.row === nextCoord2.row);
+                const nextCoordIsFirstWalk1 =
+                    firstWalk1 &&
+                    firstWalk1.col === nextCoord2.col &&
+                    firstWalk1.row === nextCoord2.row;
 
-                if (!walkMap2.has(coordToString(nextCoord2))
-                    && !nextCoordIsFirstWalk1) {
-
+                if (
+                    !walkMap2.has(coordToString(nextCoord2)) &&
+                    !nextCoordIsFirstWalk1
+                ) {
                     // console.log('way 2: walk from', currCoord2, 'type:', currTile2.pipeType, 'to', nextCoord2, 'type:', adjacentTile2.pipeType);
                     currTile2 = adjacentTile2;
-                    walkMap2.set(coordToString(nextCoord2), coordToString(currCoord2));
+                    walkMap2.set(
+                        coordToString(nextCoord2),
+                        coordToString(currCoord2),
+                    );
                     // console.log('walkMap2', walkMap2);
                     break;
                 }
             }
         }
         // step 3 check if both ways is same tile, this is farthest tile (this is an answer!)
-        if (currTile1.row === currTile2.row && currTile1.col === currTile2.col) {
+        if (
+            currTile1.row === currTile2.row &&
+            currTile1.col === currTile2.col
+        ) {
             farthestTile = currTile1;
             break;
         }
     }
 
-    console.log('walkMap1', walkMap1);
+    console.log('walkMap1', walkMap1, walkMap1.size);
+    if (isPart1) return walkMap1.size;
     console.log('walkMap2', walkMap2);
     console.log('farthestTile', farthestTile);
 
     renderWalkMap(tiles, [walkMap1, walkMap2], [Colors.BLUE, Colors.RED], true);
 
     // merge 2 walk map
-    let pipeLoopMap = new Map<string, string>();
+    const pipeLoopMap = new Map<string, string>();
     for (const [dest, src] of Array.from(walkMap1)) {
         pipeLoopMap.set(dest, src);
     }
 
     const walkMap2Array = Array.from(walkMap2).reverse();
-    for (const [src, dest] of walkMap2Array) { // swap src & dest
+    for (const [src, dest] of walkMap2Array) {
+        // swap src & dest
         if (pipeLoopMap.has(dest)) {
             throw new Error('found duplicate key' + dest);
         }
@@ -665,19 +737,24 @@ export async function day10() {
     renderWalkMap(tiles, [pipeLoopMap], [Colors.BLUE], true);
 
     // scan tile around pipe loop and mark side type
-    let scanMap = new Map<string, ScanDetail>();
+    const scanMap = new Map<string, ScanDetail>();
     for (const [dest, src] of pipeLoopMap) {
         const srcCoord = stringToCoord(src);
         const destCoord = stringToCoord(dest);
         // scan relative left & right
         const direction = findDirection(srcCoord, destCoord);
-        const [relativeLeftTiles, relativeRightTiles] = getSideTileByDirection(tiles, destCoord, direction, pipeLoopMap);
+        const [relativeLeftTiles, relativeRightTiles] = getSideTileByDirection(
+            tiles,
+            destCoord,
+            direction,
+            pipeLoopMap,
+        );
 
         scanMap.set(dest, {
             walkDirection: direction,
             directionLeftTiles: relativeLeftTiles,
             directionRightTiles: relativeRightTiles,
-            prevTile: srcCoord
+            prevTile: srcCoord,
         });
     }
 
@@ -689,12 +766,11 @@ export async function day10() {
     // flood step 1: init flood tile
     const leftSideFlood = new Set<string>();
     const rightSideFlood = new Set<string>();
-    for (const [dest, { directionLeftTiles, directionRightTiles }] of scanMap) {
-
+    for (const {directionLeftTiles, directionRightTiles} of scanMap.values()) {
         if (directionLeftTiles) {
             for (const directionLeftTile of directionLeftTiles) {
                 if (!pipeLoopMap.has(coordToString(directionLeftTile))) {
-                    leftSideFlood.add(coordToString(directionLeftTile))
+                    leftSideFlood.add(coordToString(directionLeftTile));
                 }
             }
         }
@@ -702,7 +778,7 @@ export async function day10() {
         if (directionRightTiles) {
             for (const directionRightTile of directionRightTiles) {
                 if (!pipeLoopMap.has(coordToString(directionRightTile))) {
-                    rightSideFlood.add(coordToString(directionRightTile))
+                    rightSideFlood.add(coordToString(directionRightTile));
                 }
             }
         }
@@ -714,19 +790,33 @@ export async function day10() {
     while (tilesToExpandFlood.length > 0) {
         const tile: string = tilesToExpandFlood.pop()!;
         const tileCoord = stringToCoord(tile);
-        const adjacentTiles = getAdjacentTiles(tiles, { row: tileCoord.row, col: tileCoord.col })
+        const adjacentTiles = getAdjacentTiles(tiles, {
+            row: tileCoord.row,
+            col: tileCoord.col,
+        });
         for (const adjacentTile of adjacentTiles) {
-            const adjacentTileCoord = coordToString({ row: adjacentTile.row, col: adjacentTile.col });
-            if (!leftSideFlood.has(adjacentTileCoord)
-                && !isOnPipeLoop(stringToCoord(adjacentTileCoord), pipeLoopMap)) {
-                leftSideFlood.add(adjacentTileCoord)
+            const adjacentTileCoord = coordToString({
+                row: adjacentTile.row,
+                col: adjacentTile.col,
+            });
+            if (
+                !leftSideFlood.has(adjacentTileCoord) &&
+                !isOnPipeLoop(stringToCoord(adjacentTileCoord), pipeLoopMap)
+            ) {
+                leftSideFlood.add(adjacentTileCoord);
                 tilesToExpandFlood.push(adjacentTileCoord);
             }
         }
     }
 
     console.log('leftSideFlood');
-    renderFloodMap(tiles, pipeLoopMap, [leftSideFlood], ['X'], [Colors.MAGENTA]);
+    renderFloodMap(
+        tiles,
+        pipeLoopMap,
+        [leftSideFlood],
+        ['X'],
+        [Colors.MAGENTA],
+    );
 
     // Right Side Flood
     tilesToExpandFlood = [...Array.from(rightSideFlood)];
@@ -734,19 +824,35 @@ export async function day10() {
     while (tilesToExpandFlood.length > 0) {
         const tile: string = tilesToExpandFlood.pop()!;
         const tileCoord = stringToCoord(tile);
-        const adjacentTiles = getAdjacentTiles(tiles, { row: tileCoord.row, col: tileCoord.col })
+        const adjacentTiles = getAdjacentTiles(tiles, {
+            row: tileCoord.row,
+            col: tileCoord.col,
+        });
         for (const adjacentTile of adjacentTiles) {
-            const adjacentTileCoord = coordToString({ row: adjacentTile.row, col: adjacentTile.col });
-            if (!rightSideFlood.has(adjacentTileCoord)
-                && !isOnPipeLoop(stringToCoord(adjacentTileCoord), pipeLoopMap)) {
-                rightSideFlood.add(adjacentTileCoord)
+            const adjacentTileCoord = coordToString({
+                row: adjacentTile.row,
+                col: adjacentTile.col,
+            });
+            if (
+                !rightSideFlood.has(adjacentTileCoord) &&
+                !isOnPipeLoop(stringToCoord(adjacentTileCoord), pipeLoopMap)
+            ) {
+                rightSideFlood.add(adjacentTileCoord);
                 tilesToExpandFlood.push(adjacentTileCoord);
             }
         }
     }
 
-    renderFloodMap(tiles, pipeLoopMap, [leftSideFlood, rightSideFlood], ['X', 'Y'], [Colors.MAGENTA, Colors.GREEN]);
+    renderFloodMap(
+        tiles,
+        pipeLoopMap,
+        [leftSideFlood, rightSideFlood],
+        ['X', 'Y'],
+        [Colors.MAGENTA, Colors.GREEN],
+    );
 
     console.log('left side count', leftSideFlood.size);
     console.log('right side count', rightSideFlood.size);
+
+    return rightSideFlood.size;
 }

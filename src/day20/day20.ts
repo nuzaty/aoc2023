@@ -1,4 +1,4 @@
-import {Colors, findLcmAll, getColorText, readLines, spiltWith} from '../utils';
+import {findLcmAll, readLines, spiltWith} from '../utils';
 import util from 'util';
 
 export enum ModuleType {
@@ -224,19 +224,7 @@ export function doBroadcast(signal: Signal, broadcaster: Module): Signal[] {
     });
 }
 
-function logSignal({from, type, to}: Signal) {
-    let typeText = '';
-    if (type === SignalType.High) {
-        typeText = getColorText('high', Colors.Red);
-    } else {
-        typeText = getColorText('low', Colors.Blue);
-    }
-    console.log(from + ' -' + typeText + '-> ' + to);
-}
-
-export default async function () {
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1 : read puzzle input
     const moduleMap = await readInput();
     console.log(moduleMap);
@@ -273,7 +261,9 @@ export default async function () {
             sumHighCount += highCount;
         }
         // step 2-1-2: multiply low and high signal count
-        console.log('multiply result', sumLowCount * sumHighCount);
+        const result = sumLowCount * sumHighCount;
+        console.log('multiply result', result);
+        return result;
     } else {
         // PART 2
         let totalButtonPressed = 0;
@@ -360,6 +350,7 @@ export default async function () {
                 answerModules.map(v => v.prevPressCount),
             );
             console.log('ansModuleLcm', ansModuleLcm);
+            return ansModuleLcm;
         } else {
             throw new Error('I dont know how to solve this puzzle!');
         }

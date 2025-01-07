@@ -25,7 +25,7 @@ export type Line = {
     end: Point2D;
 };
 
-export default async function () {
+export default async function (isPart1: boolean): Promise<number> {
     // step 1: read input
     const bricks: Brick[] = await readPuzzleInput();
 
@@ -52,6 +52,7 @@ export default async function () {
         '[PART 1 Answer] safelyDisintegratedCount:',
         safelyDisintegratedCount,
     );
+    if (isPart1) return safelyDisintegratedCount;
 
     console.log(
         'supportingOnlyItselfCount',
@@ -87,6 +88,7 @@ export default async function () {
     }
 
     console.log('[PART 2 Answer] totalFall:', totalFall);
+    return totalFall;
 }
 
 // return the number of other bricks that would fall

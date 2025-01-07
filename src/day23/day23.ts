@@ -4,8 +4,7 @@ type Position = {row: number; col: number};
 
 type Walker = {position: Position; steps: number};
 
-export default async function () {
-    const isPart1 = false;
+export default async function (isPart1: boolean): Promise<number> {
     const tiles = await readPuzzleInput();
 
     const startNode: Position = findStartNode(tiles);
@@ -73,6 +72,8 @@ export default async function () {
     // step 3 : find the longest path between any two nodes using DFS
     const longestPath = dfs(startNode, endNode, tiles, graphs);
     console.log('Longest path:', longestPath);
+
+    return longestPath;
 }
 
 async function readPuzzleInput(): Promise<string[][]> {

@@ -1,78 +1,9 @@
-import {Colors, getColorText, readLines, spiltWithSpace} from '../utils';
+import {readLines, spiltWithSpace} from '../utils';
 
 type Position = {
     x: number;
     y: number;
 };
-
-function renderDigMap(
-    digVertices: Position[],
-    xMin: number,
-    xMax: number,
-    yMin: number,
-    yMax: number,
-) {
-    const cols = xMax - xMin + 1;
-    const rows = yMax - yMin + 1;
-
-    const xToCol = (x: number): number => {
-        return x - xMin;
-    };
-    const yToRow = (y: number): number => {
-        return y - yMin;
-    };
-
-    const tiles: string[][] = Array.from({length: rows}, () =>
-        Array.from({length: cols}, () => '.'),
-    );
-
-    const digSymbol = getColorText('#', Colors.Red);
-
-    const paintDigSymbol = (
-        prevVertex: Position,
-        {x: digX, y: digY}: Position,
-    ) => {
-        if (prevVertex) {
-            if (prevVertex.x !== digX) {
-                // case x shift
-                if (prevVertex.x > digX) {
-                    for (let x = prevVertex.x; x > digX; x--) {
-                        tiles[yToRow(digY)][xToCol(x)] = digSymbol;
-                    }
-                } else {
-                    for (let x = prevVertex.x; x < digX; x++) {
-                        tiles[yToRow(digY)][xToCol(x)] = digSymbol;
-                    }
-                }
-            } else {
-                // case y shift
-                if (prevVertex.y > digY) {
-                    for (let y = prevVertex.y; y > digY; y--) {
-                        tiles[yToRow(y)][xToCol(digX)] = digSymbol;
-                    }
-                } else {
-                    for (let y = prevVertex.y; y < digY; y++) {
-                        tiles[yToRow(y)][xToCol(digX)] = digSymbol;
-                    }
-                }
-            }
-        }
-    };
-    let prevVertex: Position | undefined;
-    for (const digVertice of digVertices) {
-        if (prevVertex) paintDigSymbol(prevVertex, digVertice);
-        prevVertex = digVertice;
-    }
-    // handle case first and last vertices
-    paintDigSymbol(digVertices[digVertices.length - 1], digVertices[0]);
-
-    for (const row of tiles) {
-        for (const colChar of row) {
-            process.stdout.write(colChar);
-        }
-        process.stdout.write('\n');
-    }
-}
 
 function findPolygonArea(points: Position[]): number {
     const n = points.length;
@@ -120,9 +51,7 @@ function mapDirectionPart2(directionDigit: string): string {
     throw new Error('Unknown directionDigit: ' + directionDigit);
 }
 
-export default async function () {
-    const isPart1 = false;
-
+export default async function (isPart1: boolean): Promise<number> {
     // step 1 : read input into array
     const digVertices: Position[] = [];
 
@@ -189,4 +118,5 @@ export default async function () {
     console.log('total', total);
 
     // renderDigMap(digVertices, xMin, xMax, yMin, yMax);
+    return total;
 }
