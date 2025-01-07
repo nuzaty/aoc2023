@@ -1,4 +1,11 @@
 /* eslint-disable n/no-process-exit */
+import day1 from './day1/day1';
+import day2 from './day2/day2';
+import day3 from './day3/day3';
+import day4 from './day4/day4';
+import day5 from './day5/day5';
+import day6 from './day6/day6';
+import day7 from './day7/day7';
 import day8 from './day8/day8';
 import day9 from './day9/day9';
 import day10 from './day10/day10';
@@ -33,6 +40,13 @@ else throw new Error('bad arguments (invalid part): ' + selectedPart);
 
 type Day = [(isPart1: boolean) => Promise<number>, number, number?]; // num1, num2 for recheck the answer after refactoring
 const days = new Map<string, Day>([
+    ['1', [day1, 55447, 54706]],
+    ['2', [day2, 2162, 72513]],
+    ['3', [day3, 556367, 89471771]],
+    ['4', [day4, 22897, 5095824]],
+    ['5', [day5, 196167384, 125742456]],
+    ['6', [day6, 741000, 38220708]],
+    ['7', [day7, 252656917, 253499763]],
     ['8', [day8, 20777, 13289612809129]],
     ['9', [day9, 1939607039, 1041]],
     ['10', [day10, 6773, 493]],

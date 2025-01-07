@@ -1,5 +1,5 @@
 @echo off
-for /l %%x in (8, 1, 25) do (
+for /l %%x in (1, 1, 25) do (
   for /l %%y in (1, 1, 2) do (
     call :SUB %%x %%y
     if errorlevel == 1 (
