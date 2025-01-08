@@ -82,7 +82,6 @@ const getHandPoint = (hand: string, isPart1: boolean) => {
     let pointOfCard;
     if (isPart1) {
         pointOfCard = new Map<string, number>([
-            ['J', 1],
             ['2', 2],
             ['3', 3],
             ['4', 4],
