@@ -124,18 +124,16 @@ function findRepeatPattern(arr: number[], minPatternLength = 1): CycleData {
         patternLength++
     ) {
         const potentialPattern = arr.slice(-patternLength);
-        // console.log(potentialPattern);
+
         let validPattern = true;
         for (let i = 0; i < potentialPattern.length; i++) {
             const indexToCompare = arr.length - potentialPattern.length * 2 + i;
-            // console.log('compare', arr[indexToCompare], potentialPattern[i]);
+
             if (indexToCompare < 0) {
-                // console.log('compare failed no len!');
                 validPattern = false;
                 break;
             }
             if (arr[indexToCompare] !== potentialPattern[i]) {
-                // console.log('compare failed');
                 validPattern = false;
                 break;
             }

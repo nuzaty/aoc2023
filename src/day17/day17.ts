@@ -155,7 +155,7 @@ function moveAndUpdate(
             direction: moveDirection,
         });
         const path = cameFromToPath(start, goalFrontier, cameFrom);
-        // console.log(path);
+
         renderPath(tiles, path);
 
         return true;
@@ -279,16 +279,11 @@ export default async function (isPart1: boolean): Promise<number> {
     );
     if (isFinished) return answer;
 
-    // console.log("frontierQueue 1", util.inspect(frontierQueue, false, null, true));
-
     // eslint-disable-next-line no-constant-condition
     while (true) {
         const {node: frontier, priority: costSoFar} =
             frontierQueue.dequeue() as {node: Frontier; priority: number};
         const {direction, distance} = frontier;
-
-        // console.log("frontier process", util.inspect(frontier, false, null, true));
-        // console.log("costSoFar", costSoFar);
 
         // go straight
         if (distance < maxDistance) {
@@ -342,9 +337,5 @@ export default async function (isPart1: boolean): Promise<number> {
             );
             if (isFinished) return answer;
         }
-        // console.log('costSoFar', costSoFar);
-        // console.log('frontiers', util.inspect(frontiers, false, null, true));
-        // console.log('cameFrom', cameFrom);
-        // console.log("frontierQueue after process", util.inspect(frontierQueue, false, null, true));
     }
 }

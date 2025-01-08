@@ -38,7 +38,6 @@ const isAdjacentSymbol = (numInfo: NumInfo, symbolInfos: SymbolInfo[]) => {
 
         for (const [x, y] of adjacentCoords) {
             for (const {x: numX, y: numY} of numCoords) {
-                // console.log('checking adjacent...', symbolX, symbolY, numX, numY, x, y);
                 if (symbolX - x === numX && symbolY - y === numY) {
                     return true;
                 }
@@ -112,7 +111,6 @@ export default async function (isPart1: boolean): Promise<number> {
     for (const numInfo of numInfos) {
         if (isAdjacentSymbol(numInfo, symbolInfos)) {
             sumOfPartNumbers += numInfo.num;
-            //   console.log('found a part number!', numInfo.num);
         } else {
             console.log('not a part number!', numInfo.num);
         }
@@ -120,20 +118,6 @@ export default async function (isPart1: boolean): Promise<number> {
     console.log('total num', numInfos.length);
     console.log('sumOfPartNumbers', sumOfPartNumbers);
     if (isPart1) return sumOfPartNumbers;
-
-    //   console.log(
-    //     'isAdjacentSymbol',
-    //     isAdjacentSymbol(
-    //       {
-    //         num: 12,
-    //         coords: [
-    //           { x: 0, y: 0 },
-    //           { x: 1, y: 0 },
-    //         ],
-    //       },
-    //       [{ symbol: '#', coord: { x: 0, y: 1 } }]
-    //     )
-    //   );
 
     // Part 2 Answer
     let sumOfGearRatio = 0;

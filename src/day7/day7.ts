@@ -31,8 +31,6 @@ const getHandTypePoint = (hand: string, isPart1: boolean) => {
     if (!isPart1) {
         const jokerFound = symbolCount.has('J');
         if (jokerFound) {
-            // const orinalSymbolCount = structuredClone(symbolCount);
-
             if (maxCount === -1) {
                 maxCount = 5;
             } else {
@@ -42,10 +40,6 @@ const getHandTypePoint = (hand: string, isPart1: boolean) => {
                 maxCount += jokerCount;
             }
             symbolCount.delete('J');
-            // console.log('found joker! jokerCount: ', jokerCount, 'hand: ', hand);
-            // console.log(orinalSymbolCount);
-            // console.log(symbolCount);
-            // console.log('----');
         }
     }
 
@@ -140,10 +134,8 @@ export default async function (isPart1: boolean): Promise<number> {
         const point = token[1];
 
         const handTypePoint = getHandTypePoint(hand, isPart1);
-        // console.log('handTypePoint', handTypePoint);
 
         const handPoint = getHandPoint(hand, isPart1);
-        // console.log('handPoint', handPoint);
 
         const lineData: LineData = {
             hand,
@@ -166,8 +158,6 @@ export default async function (isPart1: boolean): Promise<number> {
         const addedPoint = data.point * rank;
         totalWinnings += addedPoint;
         console.log('data', data, 'addedPoint: ', addedPoint, 'rank: ', rank);
-        // data['rank'] = rank;
-        // data['addedPoint'] = addedPoint;
         rank++;
     }
 

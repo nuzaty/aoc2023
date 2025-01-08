@@ -117,7 +117,6 @@ export default async function (isPart1: boolean): Promise<number> {
                 currLocations[i] + currInstuction,
             )!;
             stepCount++;
-            // console.log('new currLocation[0]', currLocations[i], 'stepCount', stepCount);
 
             if (currLocations[i].endsWith('Z')) {
                 if (firstZFound === 0) {

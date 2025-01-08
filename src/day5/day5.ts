@@ -54,12 +54,8 @@ const mapSrcToDest = (numRangeInput: number[], srcToDestMaps: Map[]) => {
         }
         // partial map
         else {
-            //   const noMapLeftLower = num;
-            //   const noMapLeftUpper = source - 1;
             const mapLower = source;
             const mapUpper = source + length - 1;
-            //   const noMapRightLower = source + length;
-            //   const noMapRightUpper = num + numRange;
 
             partialMappingData.push({
                 mapLower,
@@ -189,8 +185,6 @@ export default async function (isPart1: boolean): Promise<number> {
                     }
                 }
             }
-
-            //   inputData.seeds.seedNums = spiltWithSpace(seedListToken).map((item) => Number(item));
         } else if (line.trim() === '') {
             // do noting if line is empty.
         } else if (line.includes(':')) {
@@ -209,7 +203,6 @@ export default async function (isPart1: boolean): Promise<number> {
         }
     }
 
-    //   console.log('seedRanges', inputData.seeds.seedRanges);
     console.log(
         'inputMap',
         util.inspect(inputMap, {showHidden: false, depth: null, colors: true}),

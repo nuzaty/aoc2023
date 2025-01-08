@@ -24,8 +24,6 @@ export default async function (isPart1: boolean): Promise<number> {
         let lastDigit = '';
 
         for (let i = 0; i < line.length; i++) {
-            //   console.log('line[i]', line[i]);
-
             if (isCharNumber(line[i])) {
                 if (firstDigit === '') firstDigit = line[i];
                 lastDigit = line[i];
@@ -43,20 +41,15 @@ export default async function (isPart1: boolean): Promise<number> {
                         if (engText.startsWith(subStr)) {
                             isFound = true;
 
-                            // console.log(`found ${subStr} in ${engText}`);
-
                             if (subStr === engText) {
                                 isEngTextFound = true;
                                 engTextVal = +val;
-                                // console.log('FullTextFound', subStr);
-                                // console.log('FullTextVal', engTextVal);
                             }
                             break;
                         }
                     }
 
                     if (isEngTextFound) {
-                        // i += subStr.length - 1;
                         if (firstDigit === '') firstDigit = String(engTextVal);
                         lastDigit = String(engTextVal);
                         break;
@@ -66,7 +59,6 @@ export default async function (isPart1: boolean): Promise<number> {
                         searchPos++;
                         if (i + searchPos < line.length) {
                             subStr += line[i + searchPos];
-                            //   console.log('new subStr', subStr);
                         } else break;
                     }
                 } while (isFound);

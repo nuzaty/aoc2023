@@ -15,10 +15,6 @@ export default async function (isPart1: boolean): Promise<number> {
         const gameIdInfo = info[0];
         const cubeSetsInfo = info[1];
 
-        // console.log('gameIdInfo', gameIdInfo);
-        // console.log('cubeSetInfo', cubeSetsInfo);
-        // console.log('gameId', gameId);
-
         const gameId = Number(gameIdInfo.split(' ')[1].trim());
         const maxColorCount: Record<string, number> = {
             red: 0,
@@ -28,7 +24,6 @@ export default async function (isPart1: boolean): Promise<number> {
 
         let isPossible = true;
         for (const cubeSet of cubeSetsInfo.split(';')) {
-            //   console.log('cubeSet', cubeSet);
             const colorCount: Record<string, number> = {
                 red: 0,
                 green: 0,
@@ -37,8 +32,6 @@ export default async function (isPart1: boolean): Promise<number> {
 
             const colorInfo = cubeSet.trim().split(',');
             for (const eachColorInfo of colorInfo) {
-                // console.log('eachColorInfo', eachColorInfo);
-
                 const token = eachColorInfo.trim().split(' ');
                 const count = Number(token[0].trim());
                 const color = token[1].trim();

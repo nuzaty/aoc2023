@@ -165,38 +165,9 @@ export default async function (isPart1: boolean): Promise<number> {
         const [currRow, currCol] = secondGalaxyLocation;
         const distance =
             Math.abs(targetRow - currRow) + Math.abs(targetCol - currCol);
-        // let stepCount = 0;
-
-        // while (currRow !== targetRow || currCol !== targetCol) {
-        //     let diffStep = 0;
-        //     if (currRow > targetRow) {
-        //         // go UP
-        //         diffStep = currRow - targetRow;
-        //         currRow -= diffStep;
-        //     } else if (currRow < targetRow) {
-        //         // go DOWN
-        //         diffStep = targetRow - currRow;
-        //         currRow += diffStep;
-        //     } else if (currCol > targetCol) {
-        //         // go LEFT
-        //         diffStep = currCol - targetCol;
-        //         currCol -= diffStep;
-        //     } else if (currCol < targetCol) {
-        //         // go RIGHT
-        //         diffStep = targetCol - currCol;
-        //         currCol += diffStep;
-        //     }
-        //     stepCount += diffStep;
-
-        //     // console.log(galaxyPair, 'currRow', currRow, 'currCol', currCol, 'targetRow', targetRow, 'targetCol', targetCol);
-        //     // await waitKeyInput();
-        // }
-        // stepCount
 
         sumOfGalaxyPairLengths += distance;
         galaxyPairLengths.set(galaxyPair.toString(), distance);
-        // console.log('galaxyPairLengths', galaxyPairLengths);
-        // await waitKeyInput();
     }
 
     console.log('galaxyPairLengths', galaxyPairLengths);

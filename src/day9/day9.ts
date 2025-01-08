@@ -73,7 +73,7 @@ export default async function (isPart1: boolean): Promise<number> {
                 const part2NewEl = firstCur - firstPrev;
 
                 const newSeq = [part2NewEl, ...cur, part1NewEl];
-                // console.log('newSeq', newSeq);
+
                 return newSeq;
             }
             throw new Error("No, that's impossible.");

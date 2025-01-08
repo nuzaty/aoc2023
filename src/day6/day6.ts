@@ -8,10 +8,8 @@ export default async function (isPart1: boolean): Promise<number> {
         const record = spiltWith(':', line);
         if (record[0] === 'Time') {
             timeData = spiltWithSpace(record[1]);
-            //   console.log('timeData', timeData);
         } else if (record[0] === 'Distance') {
             distanceData = spiltWithSpace(record[1]);
-            //   console.log('distanceData', distanceData);
         }
     }
 
@@ -62,7 +60,6 @@ export default async function (isPart1: boolean): Promise<number> {
     winCount = 0;
     for (let pressTime = 0; pressTime <= realTotalTimeNum; pressTime++) {
         const calculatedDistance = pressTime * (realTotalTimeNum - pressTime);
-        // console.log('pressTime', pressTime, 'calculatedDistance', calculatedDistance);
 
         if (calculatedDistance > realTotalDistanceNum) {
             winCount++;

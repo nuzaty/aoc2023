@@ -34,7 +34,6 @@ export default async function (isPart1: boolean): Promise<number> {
             lastTileWidth: getLastTileWidth(maxStep, mapWidth, halfMapWidth),
         };
 
-        // console.log('problem map prop', mapProp);
         const stepsToAns = [
             halfMapWidth + mapWidth * 1 + mapProp.lastTileWidth,
             halfMapWidth + mapWidth * 2 + mapProp.lastTileWidth,

@@ -67,7 +67,6 @@ export default async function (isPart1: boolean): Promise<number> {
             }
         }
     });
-    // console.log('graphs', graphs);
 
     // step 3 : find the longest path between any two nodes using DFS
     const longestPath = dfs(startNode, endNode, tiles, graphs);

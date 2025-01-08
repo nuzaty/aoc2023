@@ -69,7 +69,6 @@ export default async function (isPart1: boolean): Promise<number> {
                     lensBoxes.set(boxNum, newBox);
                 }
             }
-            // console.log('seq', seq, lensBoxes);
         }
 
         // step 3: calculate the focusing power

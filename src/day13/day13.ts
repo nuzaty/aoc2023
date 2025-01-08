@@ -79,7 +79,6 @@ function findReflection(
             }
         }
     }
-    // console.log('no vertical reflect');
 
     // if not vertical relect then check horizontal relect
     const allColReflectPos: number[][] = [];
@@ -214,18 +213,6 @@ export default async function (isPart1: boolean): Promise<number> {
                 const {count: oldCount, reflectType: oldType} =
                     allReflectionData.get(gridIndex)!;
                 const newReflectionData = findReflection(newGrid, false, false);
-
-                // fs.appendFileSync('./log.txt', '\n');
-                // for (const row of newGrid) {
-                //     for (const colChar of row) {
-                //         fs.appendFileSync('./log.txt', colChar);
-                //     }
-                //     fs.appendFileSync('./log.txt', '\n');
-                // }
-                // fs.appendFileSync('./log.txt', ' gridIndex ' + gridIndex + ' rowIndex ' + rowIndex + ' colIndex ' + colIndex + ' ' + JSON.stringify(newReflectionData));
-                // console.clear();
-
-                // console.log('gridIndex', gridIndex, 'rowIndex', rowIndex, 'colIndex', colIndex, newReflectionData);
 
                 if (newReflectionData.length === 0) continue;
 

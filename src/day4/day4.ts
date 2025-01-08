@@ -136,7 +136,6 @@ export default async function (isPart1: boolean): Promise<number> {
     for (const [cardId, cardCount] of totalCardsByCardId.entries()) {
         if (Number(cardId) <= maxCardId) {
             totalCards += cardCount;
-            // console.log('totalCards changed', totalCards);
         } else {
             console.log('skipped', cardId);
         }

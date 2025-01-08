@@ -621,12 +621,11 @@ export default async function (isPart1: boolean): Promise<number> {
             }
             row.push(char);
             colIndex++;
-            // console.log('row', row);
         }
         tiles.push(row);
         rowIndex++;
     }
-    // console.log(tiles);
+
     const foundFarthestTile = false;
     let currTile1 = startTile;
     let currTile2 = startTile;
@@ -640,8 +639,6 @@ export default async function (isPart1: boolean): Promise<number> {
         const adjacentTiles1 = getAdjacentTiles(tiles, currTile1);
         const adjacentTiles2 = getAdjacentTiles(tiles, currTile2);
 
-        // console.log(adjacentTiles1, 'walk size', walkMap1.size);
-
         // step 2 walk to new tile of both ways
         for (const adjacentTile1 of adjacentTiles1) {
             if (isWalkable(currTile1, adjacentTile1)) {
@@ -654,7 +651,6 @@ export default async function (isPart1: boolean): Promise<number> {
                     col: adjacentTile1.col,
                 };
                 if (!walkMap1.has(coordToString(nextCoord1))) {
-                    // console.log('way 1: walk from', currCoord1, 'type:', currTile1.pipeType, 'to', nextCoord1, 'type:', adjacentTile1.pipeType, 'direction', adjacentTile1.direction);
                     currTile1 = adjacentTile1;
                     if (!firstWalk1) {
                         firstWalk1 = nextCoord1;
@@ -664,7 +660,6 @@ export default async function (isPart1: boolean): Promise<number> {
                         coordToString(nextCoord1),
                         coordToString(currCoord1),
                     );
-                    // console.log('walkMap1', walkMap1);
 
                     break;
                 }
@@ -691,13 +686,12 @@ export default async function (isPart1: boolean): Promise<number> {
                     !walkMap2.has(coordToString(nextCoord2)) &&
                     !nextCoordIsFirstWalk1
                 ) {
-                    // console.log('way 2: walk from', currCoord2, 'type:', currTile2.pipeType, 'to', nextCoord2, 'type:', adjacentTile2.pipeType);
                     currTile2 = adjacentTile2;
                     walkMap2.set(
                         coordToString(nextCoord2),
                         coordToString(currCoord2),
                     );
-                    // console.log('walkMap2', walkMap2);
+
                     break;
                 }
             }
