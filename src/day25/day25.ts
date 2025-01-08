@@ -18,19 +18,14 @@ export default async function (isPart1: boolean): Promise<number> {
             }
             lines.add(line);
 
-            fs.appendFile(dataFile, line + '\n', err => {
-                if (err) {
-                    console.error(err);
-                } else {
-                    // done!
-                }
-            });
+            fs.appendFileSync(dataFile, line + '\n');
         }
     }
+
     const groupBefore = countGroup(graph);
     console.log('groupBefore: ', groupBefore);
 
-    // cheating by graph visualization from day25_output.txt (data plot in python networkx) :P
+    // cheating by graph visualization from graph_output.txt (plot data with python networkx) :P
     for (const [node1, node2] of [
         ['kpc', 'nnl'],
         ['rkh', 'sph'],

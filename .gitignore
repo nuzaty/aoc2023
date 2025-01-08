@@ -66,3 +66,4 @@ package-lock.json
 /lib/
 build/
 src/day*/input.txt
+src/day*/graph_output.txt
